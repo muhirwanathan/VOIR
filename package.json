@@ -1,0 +1,12 @@
+{
+  "name": "voir",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Voir: a chess-board game about seeing yourself.",
+  "scripts": {
+    "test": "node --test tests/"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.3"
+  }
+}
