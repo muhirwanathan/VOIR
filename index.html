@@ -1,0 +1,1484 @@
+<meta charset="utf-8">
+<title>Voir</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a walnut chessboard in warm window light, engraved VOIR on the frame. Board is the hero; a quiet side panel holds the move, the odds and the scoresheet. Stacks on phones. */
+:root {
+  --bg: #ebe2d4;
+  --glow: rgba(255, 247, 232, 0.95);
+  --panel: #f8f2e8;
+  --panel-2: #efe5d6;
+  --ink: #2a1c13;
+  --muted: #76604f;
+  --line: #dccab2;
+  --maple: #ecd4a8;
+  --maple-2: #dcbd8c;
+  --walnut: #85563a;
+  --walnut-2: #6e452c;
+  --frame: #4b2f1f;
+  --frame-2: #3a2416;
+  --engrave: rgba(18, 9, 3, 0.78);
+  --marble-1: #fdfbf7;
+  --marble-2: #e6dfd5;
+  --marble-edge: #5a4636;
+  --wood-1: #9a6a49;
+  --wood-2: #3b2216;
+  --g1: #8a5a3c;
+  --g2: #3b2216;
+  --accent: #9c6b2f;
+  --accent-soft: rgba(156, 107, 47, 0.26);
+  --on-accent: #fff8ee;
+  --dot: rgba(35, 20, 10, 0.38);
+  --danger: #a83a2a;
+  --danger-soft: rgba(168, 58, 42, 0.16);
+  --good: #3f7d4f;
+  --t-study: #4f8a5b;
+  --t-work: #c7922f;
+  --t-people: #b5533f;
+  --t-rest: #4f86a0;
+  --t-impact: #7a5a9a;
+  --t-mind: #d6a531;
+  --overlay: rgba(43, 28, 18, 0.55);
+  --font-display: "Cinzel", "Trajan Pro", Georgia, serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --font-chess: "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", "Arial Unicode MS", serif;
+  --fp: 16px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17110c; --glow: rgba(214, 162, 90, 0.12); --panel: #221812; --panel-2: #2b1f17; --ink: #f1e6d6; --muted: #b6a08a; --line: #3d2d21;
+    --maple: #d4b585; --maple-2: #c3a170; --walnut: #73492f; --walnut-2: #5e3a24;
+    --accent: #d6a25a; --accent-soft: rgba(214, 162, 90, 0.28); --on-accent: #1d130c;
+    --danger: #e0705c; --danger-soft: rgba(224, 112, 92, 0.18); --good: #7cc48e;
+    --overlay: rgba(10, 6, 3, 0.7);
+    --g1: #f1ebe2; --g2: #b9ab98;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17110c; --glow: rgba(214, 162, 90, 0.12); --panel: #221812; --panel-2: #2b1f17; --ink: #f1e6d6; --muted: #b6a08a; --line: #3d2d21;
+  --maple: #d4b585; --maple-2: #c3a170; --walnut: #73492f; --walnut-2: #5e3a24;
+  --accent: #d6a25a; --accent-soft: rgba(214, 162, 90, 0.28); --on-accent: #1d130c;
+  --danger: #e0705c; --danger-soft: rgba(224, 112, 92, 0.18); --good: #7cc48e;
+  --overlay: rgba(10, 6, 3, 0.7);
+  --g1: #f1ebe2; --g2: #b9ab98;
+  color-scheme: dark;
+}
+@media (max-width: 600px) { :root { --fp: 10px; } }
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  background: radial-gradient(1100px 620px at 8% -8%, var(--glow), transparent 70%), var(--bg);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 16px 32px;
+}
+button, input, select { font: inherit; color: inherit; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* Carved pieces */
+.marble {
+  background: linear-gradient(140deg, var(--marble-1) 0%, var(--marble-2) 38%, var(--marble-1) 52%, #d8cfc3 78%, var(--marble-1) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 0.6px var(--marble-edge)) drop-shadow(0 0 0.4px var(--marble-edge)) drop-shadow(0 3px 3px rgba(0, 0, 0, 0.35));
+}
+.walnut {
+  background: linear-gradient(140deg, var(--wood-1) 0%, var(--wood-2) 55%, #5a3622 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 1px 0 rgba(255, 230, 200, 0.25)) drop-shadow(0 3px 3px rgba(0, 0, 0, 0.45));
+}
+
+.top { max-width: 1040px; margin: 0 auto 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: baseline; gap: 12px; margin-right: auto; }
+.brand h1 { font-family: var(--font-display); font-weight: 700; font-size: 1.9rem; letter-spacing: 0.22em; text-transform: uppercase; margin: 0; line-height: 1; }
+.brand span { color: var(--muted); font-size: 0.9rem; }
+.toggles { display: flex; gap: 8px; flex-wrap: wrap; }
+.tog { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 6px 12px; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.tog[aria-pressed="true"] { background: var(--frame); color: var(--marble-1); border-color: var(--frame); }
+.tog svg { width: 14px; height: 14px; }
+
+.app { max-width: 1040px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 360px); gap: 24px; align-items: start; }
+@media (max-width: 880px) { .app { grid-template-columns: minmax(0, 1fr); } }
+
+/* Board column */
+.board-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.status { display: flex; justify-content: space-between; align-items: center; gap: 8px 16px; flex-wrap: wrap; font-size: 0.9rem; }
+.status b { font-family: var(--font-mono); font-weight: 500; font-variant-numeric: tabular-nums; }
+.clock { flex: 1 1 160px; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.clock .track { flex: 1; height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; }
+.clock .track i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.5s; }
+.life { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); }
+.checkbar { background: var(--danger); color: #fff; border-radius: 8px; padding: 8px 12px; font-family: var(--font-display); font-weight: 700; letter-spacing: 0.12em; display: flex; gap: 10px; align-items: center; animation: pulse 1.2s ease-in-out infinite; }
+.checkbar span { font-family: var(--font-body); font-weight: 400; letter-spacing: 0; }
+@keyframes pulse { 50% { opacity: 0.82; } }
+
+.board-area { display: grid; grid-template-columns: minmax(58px, 108px) minmax(0, 1fr); gap: 6px 8px; width: 100%; max-width: 720px; margin: 0 auto; }
+.ranks { display: grid; grid-template-rows: repeat(8, 1fr); padding-block: var(--fp) calc(var(--fp) * 1.8); }
+.rk { display: flex; align-items: center; justify-content: flex-end; gap: 6px; text-align: right; font-size: clamp(9px, 1.5vw, 12px); line-height: 1.15; color: var(--muted); padding-right: 2px; min-width: 0; }
+.rk b { font-family: var(--font-mono); font-weight: 500; opacity: 0.7; }
+.rk.now { color: var(--accent); font-weight: 700; }
+.rk.goal { color: var(--ink); font-weight: 700; }
+.rk.goal::before { content: "◆"; color: var(--t-mind); font-size: 0.9em; }
+.rk.past { opacity: 0.45; }
+.files { display: grid; grid-template-columns: repeat(8, 1fr); padding-inline: var(--fp); }
+.fl { text-align: center; font-size: clamp(8px, 1.35vw, 11px); color: var(--muted); line-height: 1.15; overflow-wrap: anywhere; padding: 0 1px; }
+.fl b { display: block; font-family: var(--font-mono); font-weight: 500; }
+.fl.now { color: var(--accent); font-weight: 700; }
+
+.frame {
+  position: relative; padding: var(--fp) var(--fp) calc(var(--fp) * 1.8); border-radius: 6px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.10), transparent 35%, rgba(0, 0, 0, 0.18)),
+    repeating-linear-gradient(88deg, var(--frame) 0 7px, var(--frame-2) 7px 9px, var(--frame) 9px 15px, #553524 15px 17px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -2px 0 rgba(0, 0, 0, 0.3), 0 22px 44px rgba(40, 22, 10, 0.35), 0 4px 10px rgba(40, 22, 10, 0.25);
+}
+.engrave {
+  position: absolute; right: 9%; bottom: 0; height: calc(var(--fp) * 1.8); display: flex; align-items: center;
+  font-family: var(--font-display); font-weight: 700; letter-spacing: 0.34em; font-size: calc(var(--fp) * 1.05);
+  color: var(--engrave); text-shadow: 0 1px 0 rgba(255, 225, 190, 0.3), 0 -1px 0 rgba(0, 0, 0, 0.45); pointer-events: none; user-select: none;
+}
+.board-wrap { position: relative; width: 100%; aspect-ratio: 1; max-width: 100%; }
+.board { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35); }
+.sq {
+  position: relative; border: 0; padding: 0; margin: 0; cursor: default; display: grid; place-items: center; min-width: 0; min-height: 0;
+  background: repeating-linear-gradient(98deg, rgba(120, 78, 38, 0.07) 0 2px, transparent 2px 6px, rgba(120, 78, 38, 0.04) 6px 7px, transparent 7px 11px), linear-gradient(180deg, var(--maple), var(--maple-2));
+}
+.sq.dark { background: repeating-linear-gradient(82deg, rgba(0, 0, 0, 0.10) 0 2px, transparent 2px 5px, rgba(255, 220, 180, 0.05) 5px 6px, transparent 6px 10px), linear-gradient(180deg, var(--walnut), var(--walnut-2)); }
+.sq.pastrow { filter: saturate(0.45) brightness(0.78); }
+.sq.goalrow::after { content: ""; position: absolute; inset: 0; border-top: 3px solid var(--t-mind); pointer-events: none; opacity: 0.85; }
+.sq.target, .sq.danger { cursor: pointer; }
+.sq:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; z-index: 2; }
+.sq.sel { box-shadow: inset 0 0 0 3px var(--accent), inset 0 0 0 999px var(--accent-soft); }
+.sq.lived::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(135deg, transparent 0 5px, rgba(40, 22, 10, 0.16) 5px 7px); pointer-events: none; }
+
+.tile { width: 32%; height: 32%; border-radius: 50%; pointer-events: none; box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 1px 2px rgba(0, 0, 0, 0.35); }
+.tile.study { background: var(--t-study); }
+.tile.work { background: var(--t-work); }
+.tile.people { background: var(--t-people); }
+.tile.rest { background: var(--t-rest); }
+.tile.impact { background: var(--t-impact); }
+.tile.mind { width: 46%; height: 46%; border-radius: 0; box-shadow: none; background: linear-gradient(160deg, #f6d77a, var(--t-mind) 55%, #a87b17); clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+.tile.risk { background: transparent; box-shadow: none; border: 2px dashed rgba(30, 18, 10, 0.75); display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: clamp(8px, 1.8vw, 13px); color: rgba(30, 18, 10, 0.85); }
+.sq.dark .tile.risk { border-color: rgba(255, 240, 220, 0.8); color: rgba(255, 240, 220, 0.9); }
+.tile.risk::after { content: "?"; }
+
+.piece { font-family: var(--font-chess); font-size: clamp(22px, 6vw, 46px); line-height: 1; pointer-events: none; }
+.you { width: 86%; height: 86%; border-radius: 50%; display: grid; place-items: center; pointer-events: none; background: radial-gradient(circle, var(--accent-soft) 0 42%, transparent 68%); animation: breathe 3.2s ease-in-out infinite; }
+.you .marble { font-family: var(--font-chess); font-size: clamp(24px, 6.6vw, 50px); line-height: 1; }
+.you.incheck { background: radial-gradient(circle, rgba(220, 60, 40, 0.55) 0 42%, transparent 70%); }
+@keyframes breathe { 50% { transform: scale(1.06); } }
+
+.mark { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.sq.target .mark::before { content: ""; width: 26%; height: 26%; border-radius: 50%; background: var(--dot); }
+.sq.target.occupied .mark::before { width: 90%; height: 90%; background: transparent; border: 4px solid var(--dot); }
+.sq.danger .mark::before { content: "×"; font-family: var(--font-body); font-weight: 700; color: #c43b26; font-size: clamp(14px, 3vw, 22px); text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4); }
+.sq.target:hover { box-shadow: inset 0 0 0 999px rgba(255, 236, 200, 0.22); }
+.sq.attacked-you { box-shadow: inset 0 0 0 3px #c43b26; }
+
+.trail { position: absolute; inset: 0; pointer-events: none; width: 100%; height: 100%; }
+.trail polyline { fill: none; stroke: #f4e6c8; stroke-width: 0.07; stroke-linecap: round; stroke-linejoin: round; opacity: 0.7; stroke-dasharray: 0.16 0.12; }
+.trail circle { fill: var(--frame); stroke: #f4e6c8; stroke-width: 0.03; }
+.trail text { fill: #f4e6c8; font-family: var(--font-mono); font-size: 0.22px; text-anchor: middle; dominant-baseline: central; }
+.trail.final polyline { opacity: 0.95; stroke-dasharray: none; stroke-width: 0.09; }
+
+.hint { min-height: 1.5em; font-size: 0.9rem; color: var(--muted); text-align: center; }
+.hint b { color: var(--ink); }
+.legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; font-size: 0.8rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend .sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.legend .sw.risk { border: 1.5px dashed var(--ink); }
+.legend .sw.mind { border-radius: 0; background: var(--t-mind); clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); width: 12px; height: 12px; }
+.legend .cg { font-family: var(--font-chess); font-size: 1.05rem; }
+
+/* Side panel */
+.side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; box-shadow: 0 1px 2px rgba(60, 35, 15, 0.06); }
+.label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin: 0 0 10px; }
+.voice h2 { font-family: var(--font-display); font-size: 1.12rem; font-weight: 700; margin: 0 0 6px; text-wrap: balance; letter-spacing: 0.02em; }
+.voice p { margin: 0; color: var(--muted); }
+.voice.flash { animation: flash 0.6s ease; }
+.voice.alert { border-color: var(--danger); }
+.voice.alert h2 { color: var(--danger); }
+@keyframes flash { from { transform: translateY(4px); opacity: 0.4; } }
+
+.now h3 { font-family: var(--font-display); font-size: 1.22rem; margin: 0; line-height: 1.2; letter-spacing: 0.02em; text-wrap: balance; }
+.now .meta { margin: 4px 0 12px; color: var(--muted); font-size: 0.88rem; }
+.prios { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 0.9rem; }
+.prios li { display: flex; gap: 8px; }
+.prios li::before { content: "♟\FE0E"; font-family: var(--font-chess); color: var(--accent); }
+
+.ways { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.way { border: 1px solid var(--line); background: var(--panel-2); border-radius: 8px; padding: 8px 4px 6px; cursor: pointer; display: flex; flex-direction: column; align-items: center; position: relative; }
+.way .g {
+  font-family: var(--font-chess); font-size: 1.8rem; line-height: 1.1;
+  background: linear-gradient(140deg, var(--g1), var(--g2) 55%, var(--g1)); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
+}
+.way[aria-pressed="true"] .g {
+  background: linear-gradient(140deg, var(--marble-1) 0%, var(--marble-2) 38%, var(--marble-1) 52%, #d8cfc3 78%, var(--marble-1) 100%); -webkit-background-clip: text; background-clip: text;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
+}
+.way .n { font-size: 0.8rem; font-weight: 700; }
+.way .k { position: absolute; top: 3px; left: 6px; font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); }
+.way .sig { position: absolute; top: 3px; right: 6px; font-size: 0.6rem; color: var(--t-mind); }
+.way[aria-pressed="true"] { background: repeating-linear-gradient(88deg, var(--frame) 0 7px, var(--frame-2) 7px 9px); color: var(--marble-1); border-color: var(--frame); }
+.way[aria-pressed="true"] .k { color: var(--marble-2); }
+.way:disabled { opacity: 0.35; cursor: not-allowed; }
+.way-desc { margin: 10px 0 0; font-size: 0.88rem; color: var(--muted); }
+
+.preview { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 14px; display: grid; gap: 10px; }
+.preview h4 { margin: 0; font-family: var(--font-display); font-size: 1.02rem; line-height: 1.25; letter-spacing: 0.02em; }
+.preview .ev { margin: 2px 0 0; font-size: 0.85rem; color: var(--muted); }
+.odds { display: flex; align-items: center; gap: 10px; }
+.odds strong { font-family: var(--font-mono); font-size: 1.6rem; font-weight: 500; font-variant-numeric: tabular-nums; min-width: 3.2ch; }
+.odds .track { flex: 1; height: 8px; background: var(--danger-soft); border-radius: 99px; overflow: hidden; }
+.odds .track i { display: block; height: 100%; background: var(--good); border-radius: 99px; }
+.factors { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; font-size: 0.82rem; }
+.factors li { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); }
+.factors b { font-family: var(--font-mono); font-weight: 500; font-variant-numeric: tabular-nums; }
+.factors .up { color: var(--good); }
+.factors .down { color: var(--danger); }
+.outcomes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.84rem; }
+.outcomes div { border-radius: 8px; padding: 8px 10px; background: var(--panel-2); min-width: 0; }
+.outcomes b { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.outcomes .win b { color: var(--good); }
+.outcomes .lose b { color: var(--danger); }
+.ink { font-size: 0.78rem; color: var(--muted); margin: 0; font-style: italic; }
+
+.btn { border: 1px solid var(--frame); background: var(--frame); color: var(--marble-1); border-radius: 999px; padding: 10px 18px; font-weight: 700; cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn.go { background: var(--accent); border-color: var(--accent); color: var(--on-accent); width: 100%; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.futures strong { display: block; font-family: var(--font-mono); font-size: 1.3rem; font-weight: 500; line-height: 1.3; font-variant-numeric: tabular-nums; }
+.futures p { margin: 0 0 10px; font-size: 0.88rem; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; padding: 0; list-style: none; }
+.chips li { font-size: 0.78rem; border: 1px solid var(--line); background: var(--panel-2); border-radius: 999px; padding: 3px 9px; }
+.fastest { font-size: 0.88rem; margin: 0; }
+.fastest.bad { color: var(--danger); }
+
+.values { display: grid; gap: 8px; }
+.val { display: grid; grid-template-columns: 78px minmax(0, 1fr) 28px; align-items: center; gap: 8px; font-size: 0.85rem; }
+.bar { height: 8px; background: var(--panel-2); border-radius: 99px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; border-radius: 99px; transition: width 0.5s ease; }
+.val b { font-family: var(--font-mono); font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
+.traits { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; padding: 0; list-style: none; }
+.traits li { font-size: 0.78rem; background: var(--panel-2); border-radius: 6px; padding: 3px 8px; }
+.traits b { font-family: var(--font-mono); font-weight: 500; }
+
+.sheet { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.sheet-wrap { max-height: 220px; overflow-y: auto; }
+.sheet th { text-align: left; font-weight: 400; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0 6px 6px 0; }
+.sheet td { padding: 3px 6px 3px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.sheet td.n { font-family: var(--font-mono); color: var(--muted); width: 2.4em; }
+.sheet .nt { font-family: var(--font-mono); }
+.sheet .why { color: var(--muted); display: block; font-size: 0.75rem; }
+.sheet .bad { color: var(--danger); }
+
+/* Results */
+.result h2 { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; letter-spacing: 0.02em; margin: 0; line-height: 1.15; text-wrap: balance; }
+.result .eyebrow { margin: 0 0 6px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--accent); font-weight: 700; }
+.result.mate .eyebrow { color: var(--danger); }
+.result p.lead { margin: 10px 0 0; }
+.insights { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 0.9rem; }
+.insights li { padding-left: 16px; position: relative; }
+.insights li::before { content: "♟\FE0E"; position: absolute; left: 0; top: 0; font-family: var(--font-chess); font-size: 0.8em; color: var(--accent); }
+.qs { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; font-size: 0.92rem; }
+.realmove { font-size: 1.05rem; font-weight: 700; margin: 0; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.small { font-size: 0.8rem; color: var(--muted); margin: 8px 0 0; }
+
+/* Setup */
+.setup { position: fixed; inset: 0; z-index: 20; background: var(--overlay); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); overflow-y: auto; display: grid; place-items: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.setup .box { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 0 0 24px; max-width: 640px; width: 100%; box-shadow: 0 24px 70px rgba(20, 10, 4, 0.45); overflow: hidden; }
+.setup .box > section { padding: 22px 26px 0; }
+.hero { position: relative; margin: -22px -26px 18px; aspect-ratio: 1376 / 560; max-width: none; overflow: hidden; background: var(--frame); }
+.hero img { width: 100%; height: 100%; object-fit: cover; object-position: center 60%; display: block; max-width: none; }
+.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, rgba(20, 10, 4, 0.75)); }
+.hero h2 { position: absolute; left: 26px; bottom: 14px; z-index: 1; color: #f7efe2; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5); }
+.setup h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(2.2rem, 9vw, 3.4rem); letter-spacing: 0.24em; text-transform: uppercase; margin: 0; line-height: 1; }
+.setup h3 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 4px; letter-spacing: 0.02em; }
+.setup .means { margin: 0 0 12px; color: var(--muted); }
+.setup .means em { font-style: normal; color: var(--accent); font-weight: 700; }
+.setup p { margin: 0 0 12px; }
+.stepno { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); margin: 0 0 8px; }
+.dreams { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin: 0 0 16px; }
+.dream { text-align: left; border: 1px solid var(--line); background: var(--panel-2); border-radius: 10px; padding: 10px 12px; cursor: pointer; display: grid; gap: 2px; }
+.dream b { font-family: var(--font-display); font-size: 1rem; letter-spacing: 0.02em; }
+.dream span { font-size: 0.8rem; color: var(--muted); }
+.dream[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
+.form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 0 0 12px; }
+.field { display: grid; gap: 4px; font-size: 0.85rem; min-width: 0; }
+.field label { font-weight: 700; }
+.field input, .field select { border: 1px solid var(--line); background: var(--panel-2); border-radius: 8px; padding: 8px 10px; width: 100%; min-width: 0; }
+.note { font-size: 0.85rem; color: var(--muted); background: var(--panel-2); border-radius: 8px; padding: 8px 12px; margin: 0 0 14px; }
+.qlist { display: grid; gap: 14px; margin: 0 0 16px; }
+.q { border: 0; margin: 0; padding: 0; min-width: 0; }
+.q legend { font-weight: 700; margin-bottom: 6px; padding: 0; }
+.q .opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 6px; }
+.q label { display: flex; gap: 8px; align-items: flex-start; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; cursor: pointer; font-size: 0.9rem; background: var(--panel-2); }
+.q input { margin-top: 3px; accent-color: var(--accent); }
+.q label:has(input:checked) { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.nav { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.nav .grow { margin-right: auto; }
+.last { font-size: 0.85rem; color: var(--muted); margin: 12px 0 0; }
+.sigline { font-size: 0.9rem; margin: 0 0 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+/* Last on purpose: hidden screens must stay hidden whatever display their class sets. */
+[hidden] { display: none !important; }
+</style>
+
+<header class="top">
+  <div class="brand"><h1>Voir</h1><span>see who you can become</span></div>
+  <div class="toggles">
+    <button class="tog" id="musicBtn" type="button" aria-pressed="true" title="Music on or off">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M6 2v8.3A2.5 2.5 0 1 0 7.5 12.5V5.2l6-1.4v5.5A2.5 2.5 0 1 0 15 11.5V1z"/></svg>Music
+    </button>
+    <button class="tog" id="soundBtn" type="button" aria-pressed="true" title="Sound effects on or off">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M2 6h3l4-3.5v11L5 10H2z"/><path d="M11 5.5a3.5 3.5 0 0 1 0 5M12.8 3.5a6.3 6.3 0 0 1 0 9" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>Sound
+    </button>
+    <button class="tog" id="dreamBtn" type="button" aria-pressed="false">Change dream</button>
+  </div>
+</header>
+
+<main class="app">
+  <section class="board-col" aria-label="Board">
+    <div class="status">
+      <div>Age <b id="ageNow">18</b></div>
+      <div class="clock"><span>Years left</span><div class="track"><i id="clockBar"></i></div><b id="yearsLeft">0</b></div>
+      <div class="life" id="lifeNo">Life #0</div>
+    </div>
+    <div class="checkbar" id="checkBar" hidden>CHECK <span id="checkText"></span></div>
+    <div class="board-area">
+      <div class="ranks" id="ranks" aria-hidden="true"></div>
+      <div class="frame">
+        <div class="board-wrap">
+          <div class="board" id="board" role="grid" aria-label="Career board"></div>
+          <svg class="trail" id="trail" viewBox="0 0 8 8" preserveAspectRatio="none" aria-hidden="true"></svg>
+        </div>
+        <span class="engrave" aria-hidden="true">VOIR</span>
+      </div>
+      <div></div>
+      <div class="files" id="files" aria-hidden="true"></div>
+    </div>
+    <div class="hint" id="hint" aria-live="polite"></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <aside class="side">
+    <div class="card voice" id="voice" aria-live="polite">
+      <h2 id="voiceTitle">Your move</h2>
+      <p id="voiceText"></p>
+    </div>
+
+    <div id="playPanel" class="side">
+      <div class="card now">
+        <p class="label">Where you are</p>
+        <h3 id="nowTitle">Medical student · Cardiology</h3>
+        <p class="meta" id="nowMeta"></p>
+        <p class="label">Priorities at this stage</p>
+        <ul class="prios" id="prios"></ul>
+      </div>
+
+      <div class="card">
+        <p class="label">How will you move this year?</p>
+        <div class="ways" id="ways"></div>
+        <p class="way-desc" id="wayDesc"></p>
+        <div class="preview" id="preview" hidden>
+          <div>
+            <h4 id="pvTitle"></h4>
+            <p class="ev" id="pvEvent"></p>
+          </div>
+          <div class="odds"><strong id="pvPct">0%</strong><div class="track"><i id="pvBar"></i></div></div>
+          <ul class="factors" id="pvFactors"></ul>
+          <div class="outcomes">
+            <div class="win"><b>If it works</b><span id="pvWin"></span></div>
+            <div class="lose"><b>If it fails</b><span id="pvLose"></span></div>
+          </div>
+          <button class="btn go" id="commitBtn" type="button">Play this move</button>
+          <p class="ink">Moves are written in ink. Once you play it, there is no going back.</p>
+        </div>
+      </div>
+
+      <div class="card futures">
+        <p class="label">Possibilities from here</p>
+        <strong id="futNum">0</strong>
+        <p id="futText"></p>
+        <p class="label" id="canLabel">You could still become</p>
+        <ul class="chips" id="canBecome"></ul>
+        <p class="fastest" id="fastest"></p>
+      </div>
+
+      <div class="card">
+        <p class="label">What you have built</p>
+        <div class="values" id="values"></div>
+        <ul class="traits" id="traits"></ul>
+      </div>
+
+      <div class="card">
+        <p class="label">Scoresheet · written in ink</p>
+        <div class="sheet-wrap" id="sheetWrap"><table class="sheet"><thead><tr><th>Yr</th><th>You</th><th>Life</th></tr></thead><tbody id="sheet"></tbody></table></div>
+      </div>
+    </div>
+
+    <div id="resultPanel" class="side" hidden>
+      <div class="card result" id="resultCard">
+        <p class="eyebrow" id="endEyebrow">Goal reached</p>
+        <h2 id="endTitle"></h2>
+        <p class="lead" id="endText"></p>
+        <ul class="insights" id="insights"></ul>
+      </div>
+      <div class="card">
+        <p class="label">Your next move in real life</p>
+        <p class="realmove" id="realMove"></p>
+      </div>
+      <div class="card">
+        <p class="label">What you built</p>
+        <div class="values" id="valuesEnd"></div>
+      </div>
+      <div class="card">
+        <p class="label">Questions to take with you</p>
+        <ol class="qs" id="questions"></ol>
+      </div>
+      <div class="card">
+        <div class="actions">
+          <button class="btn" id="replayBtn" type="button">Replay this life</button>
+          <button class="btn ghost" id="newBtn" type="button">New board</button>
+          <button class="btn ghost" id="copyBtn" type="button">Copy my result</button>
+        </div>
+        <p class="small" id="copyNote">Replay uses the same board and the same starting point. Make different choices and see a different future.</p>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="setup" id="setup">
+  <div class="box">
+    <section id="step1">
+      <div class="hero"><img src="assets/voir-board.png" alt="A walnut chessboard engraved VOIR, dark wooden pieces facing white marble pieces in warm window light"><h2>Voir</h2></div>
+      <p class="means">French for <em>to see</em>.</p>
+      <p>This is a game of chess against life. You are the king. Every square on the board is something you could become, and every move is a year you will not get back.</p>
+      <p class="stepno">Step 1 of 3</p>
+      <h3>What is your dream?</h3>
+      <div class="dreams" id="dreams"></div>
+      <div class="nav"><span class="grow"></span><button class="btn" id="toStep2" type="button">Next</button></div>
+      <p class="last" id="lastRun" hidden></p>
+    </section>
+
+    <section id="step2" hidden>
+      <p class="stepno">Step 2 of 3</p>
+      <h3>Where are you now?</h3>
+      <p>Be honest. The board starts from your real position.</p>
+      <div class="form">
+        <div class="field"><label for="ageIn">Your age</label><input id="ageIn" type="number" min="12" max="70" value="18"></div>
+        <div class="field"><label for="stageIn">Where you are in this path</label><select id="stageIn"></select></div>
+        <div class="field"><label for="dirIn">The direction that pulls you most</label><select id="dirIn"></select></div>
+        <div class="field"><label for="goalIn">How far you want to go</label><select id="goalIn"></select></div>
+        <div class="field"><label for="deadlineIn">Age you want to get there by</label><input id="deadlineIn" type="number" min="13" max="90" value="33"></div>
+      </div>
+      <p class="note" id="planNote"></p>
+      <div class="nav"><button class="btn ghost" id="back1" type="button">Back</button><span class="grow"></span><button class="btn" id="toStep3" type="button">Next</button></div>
+    </section>
+
+    <section id="step3" hidden>
+      <p class="stepno">Step 3 of 3</p>
+      <h3>Who are you?</h3>
+      <p>Answer quickly. Your personality changes your odds on the board.</p>
+      <div class="qlist" id="qlist"></div>
+      <p class="sigline" id="sigLine"></p>
+      <div class="nav"><button class="btn ghost" id="back2" type="button">Back</button><span class="grow"></span><button class="btn" id="beginBtn" type="button" disabled>Begin with sound</button></div>
+    </section>
+  </div>
+</div>
+
+<script>
+(() => {
+const VS = "︎";
+const N = 8;
+const $ = (id) => document.getElementById(id);
+const inB = (r, c) => r >= 0 && r < N && c >= 0 && c < N;
+const sqName = (r, c) => "abcdefgh"[c] + (8 - r);
+const lvl = (r) => 7 - r;
+const KN = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+const ORTH = [[-1,0],[1,0],[0,-1],[0,1]];
+const DIAG = [[-1,-1],[-1,1],[1,-1],[1,1]];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+
+/* ---------- Content ---------- */
+const CAREERS = {
+  doctor: {
+    name: "Doctor", pitch: "Heal people and lead in medicine.",
+    levels: ["Medical student", "Intern", "Resident", "Senior resident", "Specialist", "Consultant", "Head of department", "Medical pioneer"],
+    short: ["Student", "Intern", "Resident", "Sr resident", "Specialist", "Consultant", "Head of dept", "Pioneer"],
+    files: ["Surgery", "Pediatrics", "Cardiology", "Family medicine", "Public health", "Research", "Med-tech", "Global health"],
+    priorities: [
+      ["Pass every exam", "Build strong study habits", "Protect your sleep"],
+      ["Learn from every patient", "Find a mentor", "Survive long shifts"],
+      ["Choose your specialty", "Master procedures", "Avoid burnout"],
+      ["Teach juniors", "Publish or present research", "Pass specialty exams"],
+      ["Build a reputation", "Keep learning new methods", "Make time for family"],
+      ["Lead a team", "Make hard calls well", "Mentor the next generation"],
+      ["Run a department", "Manage people and budgets", "Improve patient outcomes"],
+      ["Change how medicine is practised", "Train future leaders", "Leave a legacy"]
+    ],
+    events: { study: "Specialty exam", work: "Night shifts", people: "A mentor", rest: "Time off", impact: "Free clinic day", risk: "Research grant" },
+    obstacles: { rook: "Burnout", bishop: "Self-doubt", knight: "Failed exam", pawn: "Setback" },
+    minds: [
+      { name: "Elizabeth Blackwell", trait: "resilience", lesson: "Rejected by many medical schools, she became the first woman to earn a medical degree in the United States, in 1849." },
+      { name: "Alexander Fleming", trait: "curiosity", lesson: "He noticed mould killing bacteria on a dish he had left out, and in 1928 discovered penicillin. Curiosity about an accident changed medicine." },
+      { name: "Paul Farmer", trait: "empathy", lesson: "He co-founded Partners In Health and brought quality care to poor communities in Haiti and Rwanda." }
+    ]
+  },
+  inventor: {
+    name: "Inventor", pitch: "Build things that never existed.",
+    levels: ["Curious tinkerer", "Prototype builder", "First invention", "Patent holder", "Lead inventor", "Product in market", "Industry innovator", "World-changing inventor"],
+    short: ["Tinkerer", "Prototyper", "1st invention", "Patent", "Lead inventor", "In market", "Innovator", "World-changer"],
+    files: ["Energy", "Health devices", "Robotics", "Farming tech", "Software", "Materials", "Transport", "Communication"],
+    priorities: [
+      ["Take things apart", "Learn maths and physics", "Keep a project notebook"],
+      ["Build fast and cheap", "Learn from broken prototypes", "Find other makers"],
+      ["Solve one real problem", "Test with real users", "Document everything"],
+      ["Protect your idea", "Learn the business side", "Find funding"],
+      ["Lead a small team", "Turn ideas into products", "Keep failing forward"],
+      ["Scale production", "Listen to customers", "Manage money"],
+      ["Shape your industry", "Mentor young inventors", "Keep inventing"],
+      ["Solve problems at world scale", "Share what you know", "Inspire a generation"]
+    ],
+    events: { study: "Engineering course", work: "Prototype sprint", people: "Maker community", rest: "Step away", impact: "Village pilot", risk: "Pitch to investors" },
+    obstacles: { rook: "Failed prototype", bishop: "Self-doubt", knight: "Distraction", pawn: "Setback" },
+    minds: [
+      { name: "William Kamkwamba", trait: "curiosity", lesson: "At 14, in Malawi, he built a working windmill from scrap and library books to bring electricity to his family's home." },
+      { name: "Thomas Edison", trait: "resilience", lesson: "He and his team tested thousands of materials before they found a light-bulb filament that lasted." },
+      { name: "Hedy Lamarr", trait: "boldness", lesson: "A film star who co-invented a frequency-hopping system, patented in 1942. The idea later fed into wireless technology." }
+    ]
+  },
+  engineer: {
+    name: "Software engineer", pitch: "Write code that millions use.",
+    levels: ["Coding learner", "Junior developer", "Developer", "Senior developer", "Tech lead", "Engineering manager", "CTO", "Tech visionary"],
+    short: ["Learner", "Junior dev", "Developer", "Senior dev", "Tech lead", "Eng manager", "CTO", "Visionary"],
+    files: ["Web", "Mobile", "AI", "Security", "Data", "Games", "Cloud", "Fintech"],
+    priorities: [
+      ["Code every day", "Build small projects", "Learn to read documentation"],
+      ["Ship your first features", "Ask good questions", "Learn from code reviews"],
+      ["Own a product area", "Write clean, tested code", "Build a portfolio"],
+      ["Design systems", "Mentor juniors", "Go deep in one field"],
+      ["Guide technical choices", "Unblock your team", "Communicate clearly"],
+      ["Hire and grow people", "Plan roadmaps", "Protect your team's health"],
+      ["Set technical strategy", "Balance risk and speed", "Speak for tech in leadership"],
+      ["Build technology millions use", "Open doors for others", "Shape your field's future"]
+    ],
+    events: { study: "Online course", work: "Product launch", people: "Hackathon team", rest: "Offline weekend", impact: "Open-source project", risk: "Join a startup" },
+    obstacles: { rook: "Burnout", bishop: "Imposter syndrome", knight: "Distraction", pawn: "Bug" },
+    minds: [
+      { name: "Ada Lovelace", trait: "curiosity", lesson: "In 1843 she published what is often called the first computer program, for a machine that had not been built yet." },
+      { name: "Katherine Johnson", trait: "discipline", lesson: "Her hand calculations for NASA were trusted to check John Glenn's orbital flight in 1962." },
+      { name: "Margaret Hamilton", trait: "resilience", lesson: "She led the team that wrote the onboard flight software for the Apollo missions to the Moon." }
+    ]
+  },
+  entrepreneur: {
+    name: "Entrepreneur", pitch: "Start a business that creates jobs.",
+    levels: ["Side hustler", "First customers", "Small business", "Growing company", "Market leader", "Regional company", "Industry leader", "Legacy builder"],
+    short: ["Side hustle", "Customers", "Small biz", "Growing", "Market leader", "Regional", "Industry lead", "Legacy"],
+    files: ["Food", "Fashion", "Fintech", "Agriculture", "Education", "Health", "Media", "Logistics"],
+    priorities: [
+      ["Find a real problem", "Sell something small", "Learn from every customer"],
+      ["Keep customers happy", "Track every coin", "Build trust"],
+      ["Hire your first people", "Improve the product", "Stay profitable"],
+      ["Raise or borrow money wisely", "Build systems", "Protect your culture"],
+      ["Win on value", "Build a strong brand", "Delegate"],
+      ["Expand to new markets", "Develop leaders", "Manage risk"],
+      ["Shape your industry", "Create jobs", "Give back"],
+      ["Build something that outlives you", "Invest in others", "Leave a legacy"]
+    ],
+    events: { study: "Business course", work: "Busy season", people: "Investor network", rest: "Recharge", impact: "Hire locally", risk: "Big expansion" },
+    obstacles: { rook: "Cash crisis", bishop: "Fear of failure", knight: "Distraction", pawn: "Bad month" },
+    minds: [
+      { name: "Strive Masiyiwa", trait: "resilience", lesson: "He fought a five-year legal battle in Zimbabwe for a mobile licence, then built Econet." },
+      { name: "Sara Blakely", trait: "boldness", lesson: "She started Spanx with 5,000 dollars of savings and no business training." },
+      { name: "Aliko Dangote", trait: "discipline", lesson: "He began as a commodities trader in Lagos and built one of Africa's largest industrial groups." }
+    ]
+  },
+  creative: {
+    name: "Artist or writer", pitch: "Create work that moves people.",
+    levels: ["Beginner", "Hobbyist", "Emerging artist", "Working artist", "Recognised name", "Award winner", "Master of the craft", "Cultural icon"],
+    short: ["Beginner", "Hobbyist", "Emerging", "Working artist", "Recognised", "Award winner", "Master", "Icon"],
+    files: ["Writing", "Music", "Film", "Design", "Painting", "Photography", "Fashion", "Animation"],
+    priorities: [
+      ["Make something every day", "Copy the masters to learn", "Finish what you start"],
+      ["Find your style", "Share your work", "Accept honest feedback"],
+      ["Build an audience", "Collaborate", "Learn the business of art"],
+      ["Earn a living from your work", "Protect your rights", "Stay original"],
+      ["Grow your voice", "Choose projects carefully", "Avoid creative burnout"],
+      ["Push your craft further", "Mentor others", "Stay humble"],
+      ["Build lasting work", "Define a style others learn from", "Teach"],
+      ["Change how people see the world", "Open doors for new voices", "Leave a body of work"]
+    ],
+    events: { study: "Masterclass", work: "Paid commission", people: "Collaboration", rest: "Wander and observe", impact: "Community workshop", risk: "Solo exhibition" },
+    obstacles: { rook: "Creative block", bishop: "Comparison", knight: "Distraction", pawn: "Rejection" },
+    minds: [
+      { name: "Chimamanda Ngozi Adichie", trait: "curiosity", lesson: "Her first novel, Purple Hibiscus, came out in 2003 when she was 26. She tells stories from home that the whole world reads." },
+      { name: "Maya Angelou", trait: "resilience", lesson: "She worked many jobs, including as a cook and a streetcar conductor, before her memoir I Know Why the Caged Bird Sings made her famous." },
+      { name: "Fela Kuti", trait: "boldness", lesson: "He created Afrobeat by mixing highlife, jazz and funk, and used his music to speak out." }
+    ]
+  },
+  changemaker: {
+    name: "Changemaker", pitch: "Lead people and change your community.",
+    levels: ["Volunteer", "Organiser", "Team leader", "Programme manager", "Director", "Executive director", "National leader", "Global changemaker"],
+    short: ["Volunteer", "Organiser", "Team leader", "Prog manager", "Director", "Exec director", "National", "Global"],
+    files: ["Education", "Environment", "Health", "Youth", "Policy", "Women's rights", "Peacebuilding", "Community"],
+    priorities: [
+      ["Show up and help", "Listen to the community", "Learn how things work"],
+      ["Bring people together", "Keep your promises", "Learn to speak in public"],
+      ["Lead a small team", "Measure your impact", "Build trust"],
+      ["Run programmes well", "Raise funds", "Develop your people"],
+      ["Set direction", "Build partnerships", "Protect your values"],
+      ["Lead an organisation", "Influence decision makers", "Stay close to the people you serve"],
+      ["Shape national change", "Build coalitions", "Stay accountable"],
+      ["Change systems worldwide", "Raise new leaders", "Leave a legacy of service"]
+    ],
+    events: { study: "Leadership course", work: "Field project", people: "Community meeting", rest: "Retreat", impact: "Launch a campaign", risk: "Run for office" },
+    obstacles: { rook: "Burnout", bishop: "Doubt", knight: "Politics", pawn: "Setback" },
+    minds: [
+      { name: "Wangari Maathai", trait: "resilience", lesson: "She founded the Green Belt Movement, which planted tens of millions of trees in Kenya, and won the Nobel Peace Prize in 2004." },
+      { name: "Nelson Mandela", trait: "resilience", lesson: "He spent 27 years in prison and came out to lead South Africa towards democracy." },
+      { name: "Malala Yousafzai", trait: "boldness", lesson: "She spoke up for girls' education, survived an attack in 2012, and at 17 became the youngest Nobel laureate." }
+    ]
+  }
+};
+const CAREER_ORDER = ["doctor", "inventor", "engineer", "entrepreneur", "creative", "changemaker"];
+
+const TRAITS = ["discipline", "curiosity", "resilience", "empathy", "boldness"];
+const TRAIT_NAME = { discipline: "Discipline", curiosity: "Curiosity", resilience: "Resilience", empathy: "Empathy", boldness: "Boldness" };
+const QUESTIONS = [
+  { q: "You have an exam in a week. You…", a: [["Plan every day and stick to it", { discipline: 2 }], ["Go deep into what interests you most", { curiosity: 2 }]] },
+  { q: "You fail at something you care about. You…", a: [["Try again the next day", { resilience: 2 }], ["Talk to someone you trust first", { empathy: 2 }]] },
+  { q: "A risky opportunity appears. You…", a: [["Take it now", { boldness: 2 }], ["Study it first", { discipline: 1, curiosity: 1 }]] },
+  { q: "A friend is struggling the night before your deadline. You…", a: [["Help them", { empathy: 2 }], ["Finish your work first", { discipline: 2 }]] },
+  { q: "You see a problem nobody has solved. You…", a: [["Try to invent a fix", { curiosity: 1, boldness: 1 }], ["Find out why it is so hard", { curiosity: 1, resilience: 1 }]] }
+];
+
+const WAY_ORDER = ["pawn", "king", "rook", "bishop", "knight", "queen"];
+const WAYS = {
+  pawn:   { g: "♟", L: "",  name: "Patience", trait: "resilience", note: 60, line: "One square forward. Slow, steady, hard to stop." },
+  king:   { g: "♚", L: "K", name: "Care",     trait: "empathy",    note: 62, line: "One square in any direction except back." },
+  rook:   { g: "♜", L: "R", name: "Focus",    trait: "discipline", note: 64, line: "Straight lines, any distance. You commit to one direction." },
+  bishop: { g: "♝", L: "B", name: "Vision",   trait: "curiosity",  note: 67, line: "Diagonals, any distance. You see angles others miss." },
+  knight: { g: "♞", L: "N", name: "Leap",     trait: "boldness",   note: 69, line: "The L-shaped jump over anything in the way." },
+  queen:  { g: "♛", L: "Q", name: "Freedom",  trait: null,         note: 72, line: "Any line, any distance. You get this once in a life." }
+};
+const BLACK_GLYPH = { rook: "♜", bishop: "♝", knight: "♞", pawn: "♟" };
+const BLACK_LETTER = { rook: "R", bishop: "B", knight: "N", pawn: "" };
+const OBST_TRAIT = { rook: "resilience", bishop: "boldness", knight: "discipline", pawn: "resilience" };
+
+const EVENTS = {
+  study:  { base: 0.65, trait: "discipline", gain: { skill: 2 },                         win: "+2 Skill" },
+  work:   { base: 0.70, trait: "resilience", gain: { money: 2, skill: 1 },               win: "+2 Money, +1 Skill" },
+  people: { base: 0.75, trait: "empathy",    gain: { network: 2 },                       win: "+2 Network" },
+  rest:   { base: 1,    trait: "discipline", gain: { energy: 4 },                        win: "+4 Energy" },
+  impact: { base: 0.60, trait: "curiosity",  gain: { impact: 2, network: 1 },            win: "+2 Impact, +1 Network" },
+  risk:   { base: 0.45, trait: "boldness",   gain: { money: 3, impact: 1, network: 1 },  win: "+3 Money, +1 Impact, +1 Network" },
+  mind:   { base: 1,    trait: "curiosity",  gain: { skill: 1 },                         win: "+1 Skill and a lesson" }
+};
+const TILE_MIX = [["study", 6], ["work", 5], ["people", 5], ["rest", 4], ["impact", 4], ["risk", 3], ["mind", 2]];
+const STATS = [["skill", "Skill", "var(--t-study)"], ["energy", "Energy", "var(--t-rest)"], ["network", "Network", "var(--t-people)"], ["money", "Money", "var(--t-work)"], ["impact", "Impact", "var(--t-impact)"]];
+const REFLECT = {
+  study: ["What skill would make the you of next year proud?", "Who has taught you the most so far?", "What are you practising right now, every week?"],
+  work: ["What would you do even if nobody paid you?", "What do you want your work to be known for?", "Hard work paid off. What is your hardest work right now?"],
+  people: ["Who do you call when it really matters?", "Who opens doors for you, and whose doors do you open?", "Who brings out your best self?"],
+  rest: ["What drains you, and what fills you back up?", "When did you last rest without guilt?", "What could you say no to this week?"],
+  impact: ["Who benefits when you succeed?", "What problem around you makes you want to act?", "What change would you be proud to leave behind?"],
+  risk: ["What risk are you avoiding in real life?", "What would you try if you knew you could not fail?", "Bold moves open new doors. Which door do you want?"]
+};
+
+/* ---------- State ---------- */
+let S = null;
+let started = false;
+const setupState = { career: "doctor", answers: [null, null, null, null, null] };
+
+function mulberry(a) {
+  return () => { let t = a = (a + 0x6D2B79F5) | 0; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+function rand() {
+  let t = S.rs = (S.rs + 0x6D2B79F5) | 0;
+  t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+const pick = (arr) => arr[Math.floor(rand() * arr.length)];
+const C = () => CAREERS[S.cfg.career];
+const titleOf = (r, c) => `${C().levels[lvl(r)]} · ${C().files[c]}`;
+const blackAt = (r, c) => S.blacks.find(b => b.alive && b.r === r && b.c === c) || null;
+const skillNeeded = (L) => Math.max(0, 2 * (L - S.cfg.start) - 2);
+function signatureTrait(traits) { let best = TRAITS[0]; TRAITS.forEach(t => { if (traits[t] > traits[best]) best = t; }); return best; }
+const sigWay = () => WAY_ORDER.find(w => WAYS[w].trait === signatureTrait(S.cfg.traits));
+
+function defaultConfig() {
+  return { career: "doctor", age: 18, start: 0, file: 2, goal: 5, deadline: 33, traits: { discipline: 3, curiosity: 3, resilience: 3, empathy: 3, boldness: 3 } };
+}
+
+function newGame(cfg, seed) {
+  const rnd = mulberry(seed);
+  const startRow = 7 - cfg.start;
+  S = {
+    seed, cfg: JSON.parse(JSON.stringify(cfg)), age: cfg.age, energy: 7,
+    stats: { skill: 0, network: 0, money: 0, impact: 0 }, traits: { ...cfg.traits },
+    pos: { r: startRow, c: cfg.file }, visited: [startRow * 8 + cfg.file], trail: [{ r: startRow, c: cfg.file }],
+    tiles: {}, blacks: [], way: null, sel: null, queenUsed: false, check: false, checkers: [],
+    over: false, ending: null, turn: 0, sheet: [], uses: { pawn: 0, king: 0, rook: 0, bishop: 0, knight: 0, queen: 0 },
+    attempts: 0, fails: 0, burnouts: 0, faced: [], minds: [], checks: 0, rs: (seed ^ 0x9e3779b9) | 0,
+    voice: { t: "Your move", p: "Choose how you will move this year, then pick a lit square to see your odds." }
+  };
+  const cells = [];
+  for (let r = 0; r <= startRow; r++) for (let c = 0; c < N; c++) if (!(r === startRow && c === cfg.file)) cells.push(r * 8 + c);
+  for (let i = cells.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [cells[i], cells[j]] = [cells[j], cells[i]]; }
+  // Black pieces: life's obstacles, placed above you and never attacking your first square.
+  const types = ["rook", "bishop", "knight", "pawn", "pawn"];
+  const used = new Set();
+  for (const type of types) {
+    for (const idx of cells) {
+      const r = Math.floor(idx / 8), c = idx % 8;
+      if (used.has(idx) || r >= startRow) continue;
+      const b = { id: type + S.blacks.length, type, r, c, alive: true, name: C().obstacles[type] };
+      S.blacks.push(b);
+      if (attackers(S.pos.r, S.pos.c).length) { S.blacks.pop(); continue; }
+      used.add(idx); break;
+    }
+  }
+  const kinds = [];
+  TILE_MIX.forEach(([k, n]) => { for (let i = 0; i < n; i++) kinds.push(k); });
+  const minds = [0, 1, 2].sort(() => rnd() - 0.5);
+  let mi = 0, ki = 0;
+  for (const idx of cells) {
+    if (ki >= kinds.length) break;
+    if (used.has(idx)) continue;
+    const k = kinds[ki++];
+    S.tiles[idx] = k === "mind" ? { t: "mind", m: minds[mi++ % 3] } : { t: k };
+  }
+  S.startPaths = possibilities().paths;
+}
+
+/* ---------- Chess logic ---------- */
+function rays(r, c, dirs) {
+  const out = [];
+  for (const [dr, dc] of dirs) {
+    let rr = r + dr, cc = c + dc;
+    while (inB(rr, cc)) { out.push({ r: rr, c: cc }); if (blackAt(rr, cc)) break; rr += dr; cc += dc; }
+  }
+  return out;
+}
+function wayTargets(way, r, c) {
+  const out = [];
+  if (way === "pawn") {
+    if (inB(r - 1, c) && !blackAt(r - 1, c)) out.push({ r: r - 1, c });
+    for (const dc of [-1, 1]) if (inB(r - 1, c + dc) && blackAt(r - 1, c + dc)) out.push({ r: r - 1, c: c + dc });
+    return out;
+  }
+  if (way === "king") { for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) if ((dr || dc) && inB(r + dr, c + dc)) out.push({ r: r + dr, c: c + dc }); return out; }
+  if (way === "knight") { for (const [dr, dc] of KN) if (inB(r + dr, c + dc)) out.push({ r: r + dr, c: c + dc }); return out; }
+  if (way === "rook") return rays(r, c, ORTH);
+  if (way === "bishop") return rays(r, c, DIAG);
+  if (way === "queen") return rays(r, c, ORTH.concat(DIAG));
+  return out;
+}
+function attacksSq(b, tr, tc, occ) {
+  const dr = tr - b.r, dc = tc - b.c;
+  if (!dr && !dc) return false;
+  if (b.type === "knight") return (Math.abs(dr) === 1 && Math.abs(dc) === 2) || (Math.abs(dr) === 2 && Math.abs(dc) === 1);
+  if (b.type === "pawn") return dr === 1 && Math.abs(dc) === 1;
+  const straight = dr === 0 || dc === 0, diag = Math.abs(dr) === Math.abs(dc);
+  if (b.type === "rook" && !straight) return false;
+  if (b.type === "bishop" && !diag) return false;
+  const sr = Math.sign(dr), sc = Math.sign(dc);
+  let r = b.r + sr, c = b.c + sc;
+  while (r !== tr || c !== tc) { if (occ(r, c)) return false; r += sr; c += sc; }
+  return true;
+}
+// Black pieces attacking (tr, tc), with you standing on `player` and `exclude` captured.
+function attackers(tr, tc, { exclude = null, player = null } = {}) {
+  const P = player || S.pos;
+  const occ = (r, c) => (r === P.r && c === P.c) || S.blacks.some(b => b.alive && b !== exclude && b.r === r && b.c === c);
+  return S.blacks.filter(b => b.alive && b !== exclude && attacksSq(b, tr, tc, occ));
+}
+function availableWays() { return WAY_ORDER.filter(w => !(w === "queen" && S.queenUsed)); }
+// Legal squares for a way. No going back in time, no reliving squares, never into check.
+function moveInfo(way, from = S.pos, check = S.check) {
+  const legal = [], danger = [];
+  for (const t of wayTargets(way, from.r, from.c)) {
+    const idx = t.r * 8 + t.c;
+    if (S.visited.includes(idx)) continue;
+    if (!check && t.r > from.r) continue;
+    const b = blackAt(t.r, t.c);
+    if (attackers(t.r, t.c, { exclude: b, player: t }).length) danger.push(t); else legal.push(t);
+  }
+  return { legal, danger };
+}
+function anyLegal() { return availableWays().some(w => moveInfo(w).legal.length > 0); }
+
+/* ---------- Odds ---------- */
+function odds(way, t) {
+  const from = S.pos, climb = from.r - t.r;
+  const idx = t.r * 8 + t.c, tile = S.tiles[idx], b = blackAt(t.r, t.c);
+  if (S.check) return { p: 1, f: [{ l: "Escaping check always works. Surviving comes first.", d: null }] };
+  let base, trait, label;
+  if (b) { base = 0.55; trait = OBST_TRAIT[b.type]; label = `facing ${b.name}`; }
+  else if (tile) { const E = EVENTS[tile.t]; base = E.base; trait = E.trait; label = tile.t === "mind" ? "meeting a great mind" : C().events[tile.t].toLowerCase(); }
+  else { base = 1; trait = "discipline"; label = "an open square"; }
+  if (base >= 1 && climb > 0) base = 0.85;
+  if (base >= 1) return { p: 1, f: [{ l: "Nothing stands in the way. This move is certain.", d: null }] };
+  const f = [{ l: `Base chance for ${label}`, d: base, base: true }];
+  let p = base;
+  const tv = S.traits[trait], td = 0.07 * (tv - 3); p += td; f.push({ l: `Your ${TRAIT_NAME[trait]} (${tv})`, d: td });
+  const ed = 0.03 * (S.energy - 5); p += ed; f.push({ l: `Your energy (${S.energy}/10)`, d: ed });
+  if (climb >= 2) { const cd = -0.12 * (climb - 1); p += cd; f.push({ l: `Climbing ${climb} levels in one year`, d: cd }); }
+  if (climb >= 1) { const need = skillNeeded(lvl(t.r)), def = Math.max(0, need - S.stats.skill); if (def) { const sd = -0.07 * def; p += sd; f.push({ l: `Skill ${S.stats.skill} of ${need} needed for this level`, d: sd }); } }
+  if (way === sigWay()) { p += 0.05; f.push({ l: "Your signature piece", d: 0.05 }); }
+  return { p: clamp(p, 0.05, 0.97), f };
+}
+function outcomeText(way, t) {
+  const idx = t.r * 8 + t.c, tile = S.tiles[idx], b = blackAt(t.r, t.c), climb = S.pos.r - t.r;
+  let win = climb > 0 ? `You become ${titleOf(t.r, t.c)}.` : climb < 0 ? `You step back to ${titleOf(t.r, t.c)}.` : `You move to ${titleOf(t.r, t.c)}.`;
+  if (b) win += ` ${b.name} leaves the board. +1 Resilience.`;
+  else if (tile) win += " " + (tile.t === "mind" ? `Meet ${C().minds[tile.m].name}: +1 ${TRAIT_NAME[C().minds[tile.m].trait]}, +1 Skill.` : EVENTS[tile.t].win + ".");
+  let lose = "You stay where you are. The year is gone. −2 Energy.";
+  if (tile && tile.t === "risk") lose += " −2 Money.";
+  return { win, lose };
+}
+
+/* ---------- Futures ---------- */
+function neighbours() {
+  const ways = availableWays(), nb = [];
+  for (let s = 0; s < 64; s++) {
+    const r = Math.floor(s / 8), c = s % 8, set = new Set();
+    if (!blackAt(r, c)) for (const w of ways) for (const t of wayTargets(w, r, c)) {
+      const idx = t.r * 8 + t.c;
+      if (t.r > r || S.visited.includes(idx)) continue;
+      if (attackers(t.r, t.c, { exclude: blackAt(t.r, t.c), player: t }).length) continue;
+      set.add(idx);
+    }
+    nb.push([...set]);
+  }
+  return nb;
+}
+function possibilities() {
+  const years = S.cfg.deadline - S.age, nb = neighbours(), goal = S.cfg.goal;
+  const start = S.pos.r * 8 + S.pos.c;
+  // Count of distinct move sequences (capped by years left). Reaching your goal ends a path.
+  let f = new Array(64).fill(1);
+  for (let i = 1; i <= years; i++) {
+    const g = new Array(64).fill(1);
+    for (let s = 0; s < 64; s++) { if (lvl(Math.floor(s / 8)) >= goal) continue; let sum = 0; for (const t of nb[s]) sum += f[t]; g[s] = sum || 1; }
+    f = g;
+  }
+  const dist = new Map([[start, 0]]);
+  let frontier = [start];
+  for (let d = 1; d <= years && frontier.length; d++) {
+    const next = [];
+    for (const s of frontier) for (const t of nb[s]) if (!dist.has(t)) { dist.set(t, d); next.push(t); }
+    frontier = next;
+  }
+  let fastest = null, best = lvl(S.pos.r);
+  const goalSquares = [];
+  dist.forEach((d, s) => {
+    const L = lvl(Math.floor(s / 8));
+    if (L > best) best = L;
+    if (L >= goal) { goalSquares.push(s); if (fastest === null || d < fastest) fastest = d; }
+  });
+  return { paths: f[start], reach: dist.size - 1, goalSquares, fastest, best };
+}
+function fmt(n) {
+  if (n < 1e6) return Math.round(n).toLocaleString("en-US");
+  if (n >= 1e24) return n.toExponential(1);
+  const units = [[1e21, "sextillion"], [1e18, "quintillion"], [1e15, "quadrillion"], [1e12, "trillion"], [1e9, "billion"], [1e6, "million"]];
+  for (const [u, name] of units) if (n >= u) return (n / u).toFixed(1).replace(/\.0$/, "") + " " + name;
+}
+
+/* ---------- Audio ---------- */
+const A = { ctx: null, music: true, sound: true, timer: null, next: 0, bar: 0, n: {} };
+const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
+const CHORDS = [[57, 60, 64, 67], [53, 57, 60, 64], [48, 55, 59, 64], [55, 59, 62, 66]];
+const PENTA = [69, 72, 74, 76, 79, 81, 84];
+const BAR = 4.8;
+function audioInit() {
+  if (A.ctx) { if (A.ctx.state === "suspended") A.ctx.resume(); return; }
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return;
+  const ctx = A.ctx = new Ctx();
+  const master = ctx.createGain(); master.gain.value = 0.9; master.connect(ctx.destination);
+  const comp = ctx.createDynamicsCompressor(); comp.connect(master);
+  const delay = ctx.createDelay(1.5); delay.delayTime.value = 0.36;
+  const fb = ctx.createGain(); fb.gain.value = 0.38;
+  const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 1800;
+  delay.connect(lp); lp.connect(fb); fb.connect(delay); lp.connect(comp);
+  const send = ctx.createGain(); send.gain.value = 0.4; send.connect(delay);
+  const music = ctx.createGain(); music.gain.value = A.music ? 0.3 : 0; music.connect(comp); music.connect(send);
+  const sfx = ctx.createGain(); sfx.gain.value = A.sound ? 0.5 : 0; sfx.connect(comp); sfx.connect(send);
+  A.n = { music, sfx };
+  if (A.music) startMusic();
+}
+function voice(dest, midi, t, dur, o = {}) {
+  const ctx = A.ctx, osc = ctx.createOscillator(), g = ctx.createGain();
+  osc.type = o.type || "sine"; osc.frequency.value = mtof(midi); osc.detune.value = o.detune || 0;
+  const vol = o.vol ?? 0.2, att = o.attack ?? 0.008, rel = o.release ?? dur;
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + att);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + att + rel);
+  let node = osc;
+  if (o.cutoff) { const fl = ctx.createBiquadFilter(); fl.type = "lowpass"; fl.frequency.value = o.cutoff; osc.connect(fl); node = fl; }
+  node.connect(g); g.connect(dest);
+  osc.start(t); osc.stop(t + att + rel + 0.05);
+}
+function playBar(t) {
+  const ch = CHORDS[A.bar % CHORDS.length]; A.bar++;
+  for (const m of ch) {
+    voice(A.n.music, m, t, BAR, { type: "triangle", vol: 0.05, attack: 1.4, release: BAR + 1.2, detune: -6, cutoff: 900 });
+    voice(A.n.music, m, t, BAR, { type: "sine", vol: 0.05, attack: 1.6, release: BAR + 1.2, detune: 6 });
+  }
+  voice(A.n.music, ch[0] - 12, t, BAR, { type: "sine", vol: 0.09, attack: 0.6, release: BAR });
+  for (let b = 0; b < 4; b++) if (Math.random() < 0.5) voice(A.n.music, PENTA[Math.floor(Math.random() * PENTA.length)], t + b * (BAR / 4) + 0.05, 1.2, { vol: 0.045, release: 1.4 });
+}
+function startMusic() {
+  if (!A.ctx || A.timer) return;
+  A.next = A.ctx.currentTime + 0.1;
+  A.timer = setInterval(() => { while (A.next < A.ctx.currentTime + 0.6) { playBar(A.next); A.next += BAR; } }, 250);
+}
+function stopMusic() { clearInterval(A.timer); A.timer = null; }
+function setMusic(on) {
+  A.music = on; $("musicBtn").setAttribute("aria-pressed", on);
+  if (!A.ctx) return;
+  A.n.music.gain.setTargetAtTime(on ? 0.3 : 0, A.ctx.currentTime, 0.4);
+  if (on) startMusic(); else setTimeout(() => { if (!A.music) stopMusic(); }, 1500);
+}
+function setSound(on) {
+  A.sound = on; $("soundBtn").setAttribute("aria-pressed", on);
+  if (A.ctx) A.n.sfx.gain.setTargetAtTime(on ? 0.5 : 0, A.ctx.currentTime, 0.05);
+}
+const sfx = {
+  ok() { return A.ctx && A.sound; },
+  select(way) { if (!this.ok()) return; voice(A.n.sfx, WAYS[way].note + 12, A.ctx.currentTime, 0.15, { vol: 0.12, release: 0.18 }); },
+  tick() { if (!this.ok()) return; voice(A.n.sfx, 84, A.ctx.currentTime, 0.08, { vol: 0.06, release: 0.08 }); },
+  move(way) { if (!this.ok()) return; const t = A.ctx.currentTime, m = WAYS[way].note; voice(A.n.sfx, m, t, 0.5, { type: "triangle", vol: 0.25, release: 0.6 }); voice(A.n.sfx, m + 7, t + 0.07, 0.4, { vol: 0.12, release: 0.5 }); },
+  good() { if (!this.ok()) return; const t = A.ctx.currentTime + 0.15; voice(A.n.sfx, 76, t, 0.8, { vol: 0.15, release: 1 }); voice(A.n.sfx, 81, t + 0.12, 0.8, { vol: 0.12, release: 1.1 }); },
+  fail() { if (!this.ok()) return; const t = A.ctx.currentTime + 0.1; voice(A.n.sfx, 64, t, 0.4, { vol: 0.12, release: 0.5 }); voice(A.n.sfx, 60, t + 0.18, 0.6, { vol: 0.12, release: 0.8 }); },
+  face() { if (!this.ok()) return; const ctx = A.ctx, t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.35); g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.45); o.connect(g); g.connect(A.n.sfx); o.start(t); o.stop(t + 0.5); [69, 76, 81].forEach((m, i) => voice(A.n.sfx, m, t + 0.15 + i * 0.09, 0.8, { vol: 0.12, release: 1 })); },
+  black() { if (!this.ok()) return; voice(A.n.sfx, 45, A.ctx.currentTime + 0.35, 0.3, { type: "triangle", vol: 0.12, release: 0.35 }); },
+  check() { if (!this.ok()) return; const t = A.ctx.currentTime + 0.45; voice(A.n.sfx, 46, t, 0.9, { type: "sawtooth", vol: 0.07, release: 1, cutoff: 600 }); voice(A.n.sfx, 47, t, 0.9, { type: "sawtooth", vol: 0.07, release: 1, cutoff: 600 }); voice(A.n.sfx, 70, t, 0.4, { type: "square", vol: 0.04, release: 0.4, cutoff: 1500 }); },
+  win() { if (!this.ok()) return; const t = A.ctx.currentTime + 0.2; [57, 64, 69, 72, 76, 81].forEach((m, i) => voice(A.n.sfx, m, t + i * 0.13, 1.2, { type: "triangle", vol: 0.14, release: 1.6 })); },
+  mate() { if (!this.ok()) return; const t = A.ctx.currentTime + 0.2; [57, 53, 50, 45].forEach((m, i) => voice(A.n.sfx, m, t + i * 0.22, 1.2, { type: "triangle", vol: 0.14, release: 1.6 })); }
+};
+
+/* ---------- Board UI ---------- */
+const cells = [];
+function buildBoard() {
+  const b = $("board");
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    const el = document.createElement("button");
+    el.className = "sq" + ((r + c) % 2 ? " dark" : "");
+    el.id = "sq-" + sqName(r, c);
+    el.type = "button";
+    el.addEventListener("click", () => clickSquare(r, c));
+    el.addEventListener("mouseenter", () => showHint(r, c));
+    el.addEventListener("focus", () => showHint(r, c));
+    el.addEventListener("mouseleave", () => showHint(-1, -1));
+    b.appendChild(el); cells.push(el);
+  }
+  WAY_ORDER.forEach((w, i) => {
+    const btn = document.createElement("button");
+    btn.className = "way"; btn.id = "way-" + w; btn.type = "button";
+    btn.addEventListener("click", () => chooseWay(w));
+    $("ways").appendChild(btn);
+    btn.dataset.i = i + 1;
+  });
+}
+
+let cur = { legal: [], danger: [] }, poss = null;
+
+function render() {
+  const car = C(), startRow = 7 - S.cfg.start;
+  const total = S.cfg.deadline - S.cfg.age, left = Math.max(0, S.cfg.deadline - S.age);
+  $("ageNow").textContent = S.age;
+  $("yearsLeft").textContent = left;
+  $("clockBar").style.width = (total ? (left / total) * 100 : 0) + "%";
+  $("lifeNo").textContent = "Life #" + S.seed;
+  $("checkBar").hidden = !(S.check && !S.over);
+  $("checkText").textContent = S.check ? `${S.checkers.map(b => b.name).join(" and ")} is attacking you. Move out of danger.` : "";
+
+  $("ranks").innerHTML = car.short.map((_, i) => {
+    const L = 7 - i, r = i;
+    const cls = ["rk", L === lvl(S.pos.r) ? "now" : "", L === S.cfg.goal ? "goal" : "", r > startRow ? "past" : ""].join(" ");
+    return `<div class="${cls}" title="${esc(car.levels[L])}"><span>${esc(car.short[L])}</span><b>${8 - r}</b></div>`;
+  }).join("");
+  $("files").innerHTML = car.files.map((f, c) => `<div class="fl${c === S.pos.c ? " now" : ""}" title="${esc(f)}"><b>${"abcdefgh"[c]}</b>${esc(f)}</div>`).join("");
+
+  cur = (!S.over && S.way) ? moveInfo(S.way) : { legal: [], danger: [] };
+  if (S.sel && !cur.legal.some(t => t.r === S.sel.r && t.c === S.sel.c)) S.sel = null;
+  const lset = new Set(cur.legal.map(t => t.r * 8 + t.c)), dset = new Set(cur.danger.map(t => t.r * 8 + t.c));
+  const attackSquares = new Set(S.check ? S.checkers.map(b => b.r * 8 + b.c) : []);
+
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    const idx = r * 8 + c, el = cells[idx];
+    const tile = S.tiles[idx], b = blackAt(r, c), isYou = S.pos.r === r && S.pos.c === c;
+    let html = "";
+    if (isYou) html += `<span class="you${S.check && !S.over ? " incheck" : ""}"><span class="marble">♚${VS}</span></span>`;
+    else if (b) html += `<span class="piece walnut">${BLACK_GLYPH[b.type] + VS}</span>`;
+    else if (tile) html += `<span class="tile ${tile.t}"></span>`;
+    html += `<span class="mark"></span>`;
+    el.innerHTML = html;
+    const isT = lset.has(idx), isD = dset.has(idx);
+    el.classList.toggle("pastrow", r > startRow);
+    el.classList.toggle("goalrow", lvl(r) === S.cfg.goal);
+    el.classList.toggle("lived", S.visited.includes(idx) && !isYou);
+    el.classList.toggle("target", isT);
+    el.classList.toggle("danger", isD);
+    el.classList.toggle("occupied", isT && !!(b || tile));
+    el.classList.toggle("sel", !!S.sel && S.sel.r === r && S.sel.c === c);
+    el.classList.toggle("attacked-you", attackSquares.has(idx) && !S.over);
+    el.tabIndex = isT ? 0 : -1;
+    let label = `${sqName(r, c)}, ${titleOf(r, c)}`;
+    if (isYou) label += ", you are here";
+    else if (b) label += `, ${b.name}, moves like a ${b.type}`;
+    else if (tile) label += ", " + (tile.t === "mind" ? `great mind: ${C().minds[tile.m].name}` : car.events[tile.t]);
+    if (S.visited.includes(idx) && !isYou) label += ", already lived";
+    if (isT) label += ", possible move";
+    if (isD) label += ", unsafe: an obstacle attacks this square";
+    el.setAttribute("aria-label", label);
+  }
+  if (!cells.some(el => el.tabIndex === 0)) cells[S.pos.r * 8 + S.pos.c].tabIndex = 0;
+
+  const pts = S.trail.map(p => `${p.c + 0.5},${p.r + 0.5}`).join(" ");
+  let svg = `<polyline points="${pts}"/>`;
+  if (S.over) S.trail.slice(1, -1).forEach((p, i) => { svg += `<circle cx="${p.c + 0.5}" cy="${p.r + 0.5}" r="0.16"/><text x="${p.c + 0.5}" y="${p.r + 0.5}">${i + 1}</text>`; });
+  const trail = $("trail"); trail.innerHTML = svg; trail.classList.toggle("final", S.over);
+
+  $("legend").innerHTML = [
+    ["study", car.events.study], ["work", car.events.work], ["people", car.events.people], ["rest", car.events.rest], ["impact", car.events.impact]
+  ].map(([k, n]) => `<span><i class="sw" style="background:var(--t-${k})"></i>${esc(n)}</span>`).join("") +
+    `<span><i class="sw risk"></i>${esc(car.events.risk)}</span><span><i class="sw mind"></i>Great mind</span>` +
+    ["rook", "bishop", "knight", "pawn"].map(t => `<span><b class="cg walnut">${BLACK_GLYPH[t] + VS}</b>${esc(car.obstacles[t])}</span>`).join("");
+
+  // Where you are
+  const L = lvl(S.pos.r);
+  $("nowTitle").textContent = titleOf(S.pos.r, S.pos.c);
+  $("nowMeta").textContent = `Age ${S.age} · Goal: ${car.levels[S.cfg.goal]} by ${S.cfg.deadline} · Energy ${S.energy}/10`;
+  $("prios").innerHTML = car.priorities[L].map(p => `<li>${esc(p)}</li>`).join("");
+
+  // Ways
+  const sig = sigWay();
+  WAY_ORDER.forEach((w, i) => {
+    const btn = $("way-" + w), W = WAYS[w];
+    btn.innerHTML = `<span class="k">${i + 1}</span>${w === sig ? '<span class="sig" title="Your signature piece">◆</span>' : ""}<span class="g">${W.g + VS}</span><span class="n">${W.name}</span>`;
+    btn.disabled = S.over || (w === "queen" && S.queenUsed) || moveInfo(w).legal.length === 0;
+    btn.setAttribute("aria-pressed", S.way === w);
+    btn.title = `${W.name}: ${W.line}` + (w === sig ? " This is your signature piece: +5% on its moves." : "");
+  });
+  $("wayDesc").textContent = S.way
+    ? `${WAYS[S.way].name}. ${WAYS[S.way].line}` + (S.check ? " In check you may step back to survive." : " You can never move backwards in time.")
+    : (S.check ? "You are in check. Choose a way that gets you out of danger." : "Each piece is a way of living. Your signature piece (◆) matches your personality.");
+
+  // Preview
+  const pv = $("preview");
+  if (S.sel && !S.over) {
+    const t = S.sel, o = odds(S.way, t), txt = outcomeText(S.way, t), tile = S.tiles[t.r * 8 + t.c], b = blackAt(t.r, t.c);
+    pv.hidden = false;
+    $("pvTitle").textContent = titleOf(t.r, t.c);
+    $("pvEvent").textContent = `${WAYS[S.way].name} to ${sqName(t.r, t.c)} · ` + (b ? `Face ${b.name}` : tile ? (tile.t === "mind" ? `Great mind: ${car.minds[tile.m].name}` : car.events[tile.t]) : "Open square");
+    $("pvPct").textContent = Math.round(o.p * 100) + "%";
+    $("pvBar").style.width = o.p * 100 + "%";
+    $("pvFactors").innerHTML = o.f.map(x => x.d === null ? `<li><span>${esc(x.l)}</span></li>` : `<li><span>${esc(x.l)}</span><b class="${x.base ? "" : x.d > 0 ? "up" : x.d < 0 ? "down" : ""}">${x.base ? Math.round(x.d * 100) + "%" : (x.d >= 0 ? "+" : "−") + Math.abs(Math.round(x.d * 100)) + "%"}</b></li>`).join("");
+    $("pvWin").textContent = " " + txt.win;
+    $("pvLose").textContent = o.p >= 1 ? " Nothing. This move cannot fail." : " " + txt.lose;
+  } else pv.hidden = true;
+
+  // Possibilities
+  if (!S.over) {
+    poss = possibilities();
+    $("futNum").textContent = fmt(poss.paths);
+    $("futText").textContent = `possible paths through your next ${left} year${left === 1 ? "" : "s"}. Every move closes some doors and opens others. ${poss.reach} different squares are still within reach.`;
+    const goalTitles = poss.goalSquares.map(s => C().files[s % 8]);
+    const uniq = [...new Set(goalTitles)];
+    if (uniq.length) {
+      $("canLabel").textContent = `You could still become ${car.levels[S.cfg.goal]} in`;
+      $("canBecome").innerHTML = uniq.map(f => `<li>${esc(f)}</li>`).join("");
+      const yrs = poss.fastest;
+      const fx = $("fastest"); fx.classList.remove("bad");
+      fx.textContent = `Fastest safe route: ${yrs} year${yrs === 1 ? "" : "s"} (age ${S.age + yrs}), if every move works.`;
+    } else {
+      $("canLabel").textContent = "Highest level still within reach";
+      $("canBecome").innerHTML = `<li>${esc(car.levels[poss.best])}</li>`;
+      const fx = $("fastest"); fx.classList.add("bad");
+      fx.textContent = `From here, ${car.levels[S.cfg.goal]} can no longer be reached by ${S.cfg.deadline}. You can still grow, change direction or play a new life.`;
+    }
+  }
+
+  renderValues($("values"));
+  $("traits").innerHTML = TRAITS.map(t => `<li>${TRAIT_NAME[t]} <b>${S.traits[t]}</b></li>`).join("");
+
+  $("sheet").innerHTML = S.sheet.length ? S.sheet.map(row => `<tr><td class="n">${row.age}</td><td><span class="nt${row.fail ? " bad" : ""}">${row.white}</span><span class="why">${esc(row.why)}</span></td><td><span class="nt">${row.black || ""}</span><span class="why">${esc(row.bwhy || "")}</span></td></tr>`).join("")
+    : `<tr><td class="n">${S.age}</td><td colspan="2"><span class="why">Your first move is waiting. Every move will be written here.</span></td></tr>`;
+  const sw = $("sheetWrap"); sw.scrollTop = sw.scrollHeight;
+
+  $("voiceTitle").textContent = S.voice.t;
+  $("voiceText").textContent = S.voice.p;
+  $("voice").classList.toggle("alert", !!S.voice.alert);
+
+  $("playPanel").hidden = S.over;
+  $("resultPanel").hidden = !S.over;
+  if (S.over) renderResult();
+  showHint(-1, -1);
+}
+
+function renderValues(el) {
+  el.innerHTML = STATS.map(([k, n, col]) => {
+    const v = k === "energy" ? S.energy : S.stats[k], max = k === "energy" ? 10 : Math.max(10, ...["skill", "network", "money", "impact"].map(x => S.stats[x]));
+    return `<div class="val"><span>${n}</span><div class="bar"><i style="width:${(v / max) * 100}%;background:${col}"></i></div><b>${v}</b></div>`;
+  }).join("");
+}
+
+function showHint(r, c) {
+  const h = $("hint");
+  if (S.over) { h.textContent = "Your path is drawn on the board, year by year."; return; }
+  const t = cur.legal.find(x => x.r === r && x.c === c);
+  const d = cur.danger.find(x => x.r === r && x.c === c);
+  if (inB(r, c) && !t && !d) { h.innerHTML = `<b>${sqName(r, c)}</b> · ${esc(titleOf(r, c))}` + (S.visited.includes(r * 8 + c) ? " · already lived" : ""); return; }
+  if (d) { h.innerHTML = `<b>${sqName(r, c)}</b> · unsafe. ${esc(attackers(r, c, { exclude: blackAt(r, c), player: d }).map(b => b.name).join(" and "))} attacks this square.`; return; }
+  if (!t) { h.textContent = S.way ? `${cur.legal.length} squares lit. Pick one to see your odds.` : "Choose how you will move to light up your possibilities."; return; }
+  h.innerHTML = `<b>${sqName(r, c)}</b> · ${esc(titleOf(r, c))} · ${Math.round(odds(S.way, t).p * 100)}% chance`;
+}
+
+function say(t, p, alert = false) { S.voice = { t, p, alert }; const v = $("voice"); v.classList.remove("flash"); void v.offsetWidth; v.classList.add("flash"); }
+
+function chooseWay(w) {
+  if (S.over || !started) return;
+  if ($("way-" + w).disabled) return;
+  S.way = w; S.sel = null; sfx.select(w); render();
+}
+
+function clickSquare(r, c) {
+  if (S.over || !started) return;
+  if (!S.way) { say("Choose a way first", "Pick how you want to move this year: Patience, Care, Focus, Vision, Leap or Freedom."); render(); return; }
+  if (cur.danger.some(t => t.r === r && t.c === c)) {
+    const names = attackers(r, c, { exclude: blackAt(r, c), player: { r, c } }).map(b => b.name).join(" and ");
+    say("You cannot move there", `${names} attacks that square. Like a king in chess, you can never move into check.`); render(); return;
+  }
+  if (!cur.legal.some(t => t.r === r && t.c === c)) return;
+  if (S.sel && S.sel.r === r && S.sel.c === c) { commit(); return; }
+  S.sel = { r, c }; sfx.tick(); render();
+  if (window.matchMedia && window.matchMedia("(max-width: 880px)").matches) $("preview").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function addGain(gain) {
+  for (const [k, v] of Object.entries(gain)) {
+    if (k === "energy") S.energy = clamp(S.energy + v, 0, 10);
+    else S.stats[k] = Math.max(0, S.stats[k] + v);
+  }
+}
+
+function commit() {
+  if (S.over || !S.way || !S.sel) return;
+  const way = S.way, t = S.sel, from = { ...S.pos };
+  const o = odds(way, t), success = o.p >= 1 || rand() < o.p;
+  const idx = t.r * 8 + t.c, tile = S.tiles[idx], b = blackAt(t.r, t.c), climb = from.r - t.r;
+  const wasCheck = S.check;
+  S.turn++; S.attempts++; S.uses[way]++; S.age++;
+  if (way === "queen") S.queenUsed = true;
+  const row = { age: S.age, white: "", why: "", black: "", bwhy: "", fail: false };
+  const note = WAYS[way].L + (b ? (way === "pawn" ? "abcdefgh"[from.c] : "") + "x" : "") + sqName(t.r, t.c);
+  let title, text;
+  sfx.move(way);
+  if (success) {
+    S.pos = { r: t.r, c: t.c }; S.visited.push(idx); S.trail.push({ r: t.r, c: t.c });
+    let gainedRest = false;
+    title = climb > 0 ? `You became ${titleOf(t.r, t.c)}` : `${WAYS[way].name}: ${titleOf(t.r, t.c)}`;
+    text = climb > 0 ? "A new level. New priorities come with it." : climb < 0 ? "You stepped back to survive. Sometimes that is the wise move." : "A sideways move. You changed direction without losing ground.";
+    if (b) {
+      b.alive = false; S.traits.resilience = Math.min(7, S.traits.resilience + 1); S.faced.push(b.name);
+      title = `You faced ${b.name}`; text = `+1 Resilience. ${b.name} is off the board. What does ${b.name.toLowerCase()} look like in your real life?`; sfx.face();
+    } else if (tile) {
+      delete S.tiles[idx];
+      if (tile.t === "mind") {
+        const m = C().minds[tile.m]; S.minds.push(m.name); S.traits[m.trait] = Math.min(7, S.traits[m.trait] + 1); addGain({ skill: 1 });
+        title = `A great mind: ${m.name}`; text = `${m.lesson} +1 ${TRAIT_NAME[m.trait]}, +1 Skill.`;
+      } else {
+        addGain(EVENTS[tile.t].gain); if (tile.t === "rest") gainedRest = true;
+        title = `${C().events[tile.t]}: ${EVENTS[tile.t].win}`; text = (climb > 0 ? `You are now ${titleOf(t.r, t.c)}. ` : "") + pick(REFLECT[tile.t]);
+      }
+      sfx.good();
+    } else if (climb > 0) sfx.good();
+    if (!gainedRest) S.energy = clamp(S.energy - 1, 0, 10);
+    row.white = note + (climb >= 2 && o.p < 1 ? "!" : "");
+    row.why = climb > 0 ? `${C().short[lvl(t.r)]} · ${C().files[t.c]}` : (b ? `faced ${b.name}` : tile ? (tile.t === "mind" ? C().minds[tile.m].name : C().events[tile.t]) : "open square");
+  } else {
+    S.fails++; S.energy = clamp(S.energy - 2, 0, 10);
+    if (tile && tile.t === "risk") S.stats.money = Math.max(0, S.stats.money - 2);
+    row.white = note + "?"; row.fail = true; row.why = "tried and failed, stayed";
+    title = "It did not work this time"; text = `You tried for ${titleOf(t.r, t.c)} and stayed where you were. The year is gone and it cannot be taken back. What would make the next attempt stronger?`;
+    sfx.fail();
+  }
+  if (S.energy <= 0) {
+    S.age++; S.burnouts++; S.energy = 4;
+    text += " Your energy hit zero: burnout cost you an extra year.";
+    row.why += ", burnout";
+  }
+  S.sel = null;
+  if (wasCheck) { S.check = false; S.checkers = []; }
+  S.sheet.push(row);
+
+  if (success && lvl(S.pos.r) >= S.cfg.goal) return end("goal", title, text);
+  if (S.age >= S.cfg.deadline) return end("time", title, text);
+
+  // Life replies.
+  const reply = blackTurn();
+  if (reply) {
+    row.black = reply.note; row.bwhy = reply.why; sfx.black();
+  }
+  S.checkers = attackers(S.pos.r, S.pos.c);
+  S.check = S.checkers.length > 0;
+  if (S.check) {
+    S.checks++; row.black += row.black.endsWith("+") ? "" : "+";
+    if (!anyLegal()) { row.black = row.black.replace(/\+$/, "#"); return end("mate", title, text); }
+    sfx.check();
+    say(`Check: ${S.checkers.map(x => x.name).join(" and ")}`, `${title}. ${S.checkers.map(x => x.name).join(" and ")} now attacks you. You must move out of danger. In check, stepping back is allowed.`, true);
+  } else {
+    if (!anyLegal()) return end("stuck", title, text);
+    say(title, text);
+  }
+  if (S.way && (S.way === "queen" && S.queenUsed || moveInfo(S.way).legal.length === 0)) S.way = null;
+  render();
+}
+
+function blackMovesFor(b) {
+  const out = [];
+  const occB = (r, c) => S.blacks.some(x => x.alive && x !== b && x.r === r && x.c === c);
+  const isP = (r, c) => r === S.pos.r && c === S.pos.c;
+  if (b.type === "pawn") {
+    if (b.r + 1 > 7) return [{ off: true, r: b.r, c: b.c }];
+    if (!occB(b.r + 1, b.c) && !isP(b.r + 1, b.c)) out.push({ r: b.r + 1, c: b.c });
+    return out;
+  }
+  if (b.type === "knight") { for (const [dr, dc] of KN) { const r = b.r + dr, c = b.c + dc; if (inB(r, c) && !occB(r, c) && !isP(r, c)) out.push({ r, c }); } return out; }
+  for (const [dr, dc] of (b.type === "rook" ? ORTH : DIAG)) {
+    let r = b.r + dr, c = b.c + dc;
+    while (inB(r, c) && !occB(r, c) && !isP(r, c)) { out.push({ r, c }); r += dr; c += dc; }
+  }
+  return out;
+}
+function blackTurn() {
+  const all = [];
+  S.blacks.filter(b => b.alive).forEach(b => blackMovesFor(b).forEach(m => all.push({ b, ...m })));
+  if (!all.length) return null;
+  const sim = (m, fn) => {
+    const { r, c, alive } = m.b;
+    if (m.off) m.b.alive = false; else { m.b.r = m.r; m.b.c = m.c; }
+    const savedCheck = S.check; S.check = true;
+    const v = fn();
+    S.check = savedCheck; m.b.r = r; m.b.c = c; m.b.alive = alive;
+    return v;
+  };
+  const givesCheck = (m) => !m.off && sim(m, () => attackers(S.pos.r, S.pos.c).length > 0);
+  let choice = null;
+  if (S.turn >= 2 && rand() < Math.min(0.7, 0.3 + 0.03 * S.turn)) {
+    const checks = all.filter(givesCheck);
+    if (checks.length) {
+      const fair = checks.filter(m => sim(m, () => anyLegal()));
+      if (fair.length) choice = pick(fair);
+      else if (rand() < 0.35) choice = pick(checks);
+    }
+  }
+  if (!choice && rand() < 0.55) {
+    const on = all.filter(m => !m.off);
+    if (on.length) {
+      const d = (m) => Math.max(Math.abs(m.r - S.pos.r), Math.abs(m.c - S.pos.c));
+      const best = Math.min(...on.map(d));
+      choice = pick(on.filter(m => d(m) === best));
+    }
+  }
+  if (!choice) choice = pick(all);
+  const b = choice.b;
+  if (choice.off) { b.alive = false; return { note: "…", why: `${b.name} passed` }; }
+  b.r = choice.r; b.c = choice.c;
+  return { note: BLACK_LETTER[b.type] + sqName(b.r, b.c), why: b.name };
+}
+
+function end(kind, title, text) {
+  S.over = true; S.ending = kind; S.way = null; S.sel = null;
+  if (kind === "goal") sfx.win(); else if (kind === "mate") sfx.mate(); else sfx.fail();
+  const t = titleOf(S.pos.r, S.pos.c);
+  const heads = {
+    goal: ["You made it", `${title}. At ${S.age}, you reached ${C().levels[S.cfg.goal]}.`],
+    time: ["Time ran out", `At ${S.age}, you are ${t}.`],
+    mate: ["Checkmate", `${S.checkers.map(b => b.name).join(" and ")} trapped you at ${S.age}.`],
+    stuck: ["Stalemate", `At ${S.age}, every way forward is blocked.`]
+  };
+  say(heads[kind][0], heads[kind][1], kind === "mate");
+  try { localStorage.setItem("voir.last", JSON.stringify({ title: t, ending: kind, age: S.age })); } catch (e) {}
+  render();
+  if (window.matchMedia && window.matchMedia("(max-width: 880px)").matches) $("resultPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function mostUsedWay() { let top = null; WAY_ORDER.forEach(w => { if (S.uses[w] && (!top || S.uses[w] > S.uses[top])) top = w; }); return top; }
+
+function renderResult() {
+  const car = C(), t = titleOf(S.pos.r, S.pos.c), L = lvl(S.pos.r), gap = S.cfg.goal - L;
+  const card = $("resultCard"); card.classList.toggle("mate", S.ending === "mate");
+  const yearsUsed = S.age - S.cfg.age;
+  const E = {
+    goal: ["Goal reached", `${t}`, `At ${S.age}, after ${yearsUsed} year${yearsUsed === 1 ? "" : "s"}, you reached ${car.levels[S.cfg.goal]}, ${S.cfg.deadline - S.age} year${S.cfg.deadline - S.age === 1 ? "" : "s"} before your deadline.`],
+    time: ["Time ran out", `${t}`, gap > 0 ? `At ${S.age} you are ${gap} level${gap === 1 ? "" : "s"} from ${car.levels[S.cfg.goal]}. Real careers often take longer than planned. That is not failure. It is information.` : `At ${S.age} you are here.`],
+    mate: ["Checkmate", `${t}`, `At ${S.age}, ${S.checkers.map(b => b.name).join(" and ")} trapped you with no safe move left. In real life a checkmate is a hard season, not the end. Replay and see what changes.`],
+    stuck: ["Stalemate", `${t}`, `At ${S.age}, every way forward was blocked. In life, this is the moment to change direction completely.`]
+  }[S.ending];
+  $("endEyebrow").textContent = E[0];
+  $("endTitle").textContent = E[1];
+  $("endText").textContent = E[2];
+
+  const ins = [];
+  ins.push(`At the start you had ${fmt(S.startPaths)} possible paths. You lived exactly one of them.`);
+  const ok = S.attempts - S.fails;
+  ins.push(`You played ${S.attempts} move${S.attempts === 1 ? "" : "s"}: ${ok} worked and ${S.fails} failed.`);
+  const sorted = ["skill", "network", "money", "impact"].sort((a, b) => S.stats[b] - S.stats[a]);
+  const nm = { skill: "Skill", network: "Network", money: "Money", impact: "Impact" };
+  ins.push(`Your priority was ${nm[sorted[0]]} (${S.stats[sorted[0]]}). You invested least in ${nm[sorted[3]]} (${S.stats[sorted[3]]}).`);
+  const sig = sigWay(), top = mostUsedWay();
+  if (top) ins.push(top === sig ? `You played true to your personality: your signature piece, ${WAYS[sig].name}, was your most used move.` : `Your personality piece is ${WAYS[sig].name}, but you moved most with ${WAYS[top].name}. Life asked you to be someone else, or you chose to grow.`);
+  if (S.faced.length) ins.push(`You faced ${S.faced.join(", ")} head on.`);
+  if (S.checks) ins.push(`Life put you in check ${S.checks} time${S.checks === 1 ? "" : "s"}.`);
+  if (S.burnouts) ins.push(`You burned out ${S.burnouts} time${S.burnouts === 1 ? "" : "s"} and lost a year each time.`);
+  if (S.minds.length) ins.push(`You learned from ${S.minds.join(" and ")}.`);
+  $("insights").innerHTML = ins.map(x => `<li>${esc(x)}</li>`).join("");
+
+  const nextL = Math.min(7, S.ending === "goal" ? L : L);
+  $("realMove").textContent = car.priorities[nextL][0] + ".";
+  renderValues($("valuesEnd"));
+  const qs = [
+    `In real life, which ${car.files[S.pos.c].toLowerCase()} step could you take this month?`,
+    `You invested least in ${nm[sorted[3]].toLowerCase()}. What would change if you gave it one hour a week?`,
+    S.ending === "goal" ? `You reached ${car.levels[S.cfg.goal]}. What do you want after that?` : S.ending === "mate" ? `What is the ${S.checkers.map(b => b.name.toLowerCase()).join(" or ")} in your real life, and how will you protect yourself from it?` : `What would you do differently with the same years?`
+  ];
+  $("questions").innerHTML = qs.map(q => `<li>${esc(q)}</li>`).join("");
+}
+
+function summary() {
+  const car = C();
+  const lines = [`Voir · ${car.name} · Life #${S.seed}`, `${$("endEyebrow").textContent}: ${titleOf(S.pos.r, S.pos.c)} at age ${S.age}`, `Goal: ${car.levels[S.cfg.goal]} by ${S.cfg.deadline}`, ""];
+  STATS.forEach(([k, n]) => lines.push(`${n}: ${k === "energy" ? S.energy : S.stats[k]}`));
+  lines.push("", "Scoresheet: " + S.sheet.map(r => `${r.age}. ${r.white}${r.black ? " " + r.black : ""}`).join("  "));
+  return lines.join("\n");
+}
+
+/* ---------- Setup ---------- */
+function showStep(n) { [1, 2, 3].forEach(i => { $("step" + i).hidden = i !== n; }); }
+function renderDreams() {
+  $("dreams").innerHTML = CAREER_ORDER.map(k => `<button class="dream" type="button" id="dream-${k}" aria-pressed="${setupState.career === k}"><b>${esc(CAREERS[k].name)}</b><span>${esc(CAREERS[k].pitch)}</span></button>`).join("");
+  CAREER_ORDER.forEach(k => $("dream-" + k).addEventListener("click", () => { setupState.career = k; renderDreams(); fillForm(); }));
+}
+function fillForm() {
+  const car = CAREERS[setupState.career];
+  const stage = Math.min(+$("stageIn").value || 0, 2);
+  $("stageIn").innerHTML = car.levels.slice(0, 3).map((l, i) => `<option value="${i}"${i === stage ? " selected" : ""}>${esc(l)}</option>`).join("");
+  const dir = +$("dirIn").value || 2;
+  $("dirIn").innerHTML = car.files.map((f, i) => `<option value="${i}"${i === dir ? " selected" : ""}>${esc(f)}</option>`).join("");
+  updateGoal();
+}
+function updateGoal() {
+  const car = CAREERS[setupState.career], stage = +$("stageIn").value;
+  let goal = +$("goalIn").value; if (!(goal > stage)) goal = Math.min(7, stage + 5);
+  $("goalIn").innerHTML = car.levels.map((l, i) => i > stage ? `<option value="${i}"${i === goal ? " selected" : ""}>${esc(l)}</option>` : "").join("");
+  updatePlan();
+}
+function readCfg() {
+  const age = clamp(Math.round(+$("ageIn").value || 18), 12, 70);
+  const start = +$("stageIn").value, goal = +$("goalIn").value;
+  let deadline = Math.round(+$("deadlineIn").value || age + 15);
+  deadline = clamp(deadline, age + (goal - start), age + 40);
+  const traits = { discipline: 2, curiosity: 2, resilience: 2, empathy: 2, boldness: 2 };
+  setupState.answers.forEach((a, i) => { if (a !== null) Object.entries(QUESTIONS[i].a[a][1]).forEach(([k, v]) => { traits[k] += v; }); });
+  return { career: setupState.career, age, start, file: +$("dirIn").value, goal, deadline, traits };
+}
+function updatePlan() {
+  const cfg = readCfg(), car = CAREERS[cfg.career], need = cfg.goal - cfg.start, years = cfg.deadline - cfg.age;
+  $("planNote").textContent = `From ${car.levels[cfg.start]} to ${car.levels[cfg.goal]} is ${need} level${need === 1 ? "" : "s"}. You are giving yourself ${years} year${years === 1 ? "" : "s"} (age ${cfg.age} to ${cfg.deadline}). Each move is one year.` + (years < need * 2 ? " That is very ambitious. Real careers usually take two or three years per level." : "");
+}
+function renderQuestions() {
+  $("qlist").innerHTML = QUESTIONS.map((q, i) => `<fieldset class="q"><legend>${i + 1}. ${esc(q.q)}</legend><div class="opts">${q.a.map((a, j) => `<label><input type="radio" name="q${i}" id="q${i}a${j}" value="${j}"${setupState.answers[i] === j ? " checked" : ""}> <span>${esc(a[0])}</span></label>`).join("")}</div></fieldset>`).join("");
+  QUESTIONS.forEach((q, i) => q.a.forEach((_, j) => $(`q${i}a${j}`).addEventListener("change", () => { setupState.answers[i] = j; updateSig(); })));
+  updateSig();
+}
+function updateSig() {
+  const done = setupState.answers.every(a => a !== null);
+  $("beginBtn").disabled = !done;
+  if (!done) { $("sigLine").textContent = `Answer all ${QUESTIONS.length} to begin.`; return; }
+  const tr = readCfg().traits, top = signatureTrait(tr), w = WAY_ORDER.find(x => WAYS[x].trait === top);
+  $("sigLine").innerHTML = `Your strongest trait is <b>${TRAIT_NAME[top]}</b>. Your signature piece is <b>${WAYS[w].g + VS} ${WAYS[w].name}</b>: its moves get +5%.`;
+}
+function openSetup() { $("setup").hidden = false; showStep(1); started = false; }
+function begin() {
+  const cfg = readCfg();
+  newGame(cfg, Math.floor(Math.random() * 90000) + 10000);
+  started = true; $("setup").hidden = true; audioInit();
+  render();
+  const f = cells[S.pos.r * 8 + S.pos.c]; if (f) f.focus({ preventScroll: true });
+}
+function restart(seed, cfg = S.cfg) { newGame(cfg, seed); started = true; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+
+/* ---------- Wiring ---------- */
+buildBoard();
+renderDreams(); fillForm(); renderQuestions();
+$("toStep2").addEventListener("click", () => showStep(2));
+$("toStep3").addEventListener("click", () => showStep(3));
+$("back1").addEventListener("click", () => showStep(1));
+$("back2").addEventListener("click", () => showStep(2));
+$("stageIn").addEventListener("change", updateGoal);
+["goalIn", "ageIn", "deadlineIn", "dirIn"].forEach(id => $(id).addEventListener("input", updatePlan));
+$("ageIn").addEventListener("change", () => { const a = clamp(Math.round(+$("ageIn").value || 18), 12, 70); $("ageIn").value = a; if (+$("deadlineIn").value <= a) $("deadlineIn").value = a + 15; updatePlan(); });
+$("beginBtn").addEventListener("click", begin);
+$("commitBtn").addEventListener("click", commit);
+$("musicBtn").addEventListener("click", () => { audioInit(); setMusic(!A.music); });
+$("soundBtn").addEventListener("click", () => { audioInit(); setSound(!A.sound); });
+$("dreamBtn").addEventListener("click", openSetup);
+$("replayBtn").addEventListener("click", () => restart(S.seed));
+$("newBtn").addEventListener("click", () => restart(Math.floor(Math.random() * 90000) + 10000));
+$("copyBtn").addEventListener("click", () => {
+  const text = summary(), note = $("copyNote");
+  const fallback = () => { note.textContent = text; const range = document.createRange(); range.selectNodeContents(note); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range); };
+  try { navigator.clipboard.writeText(text).then(() => { note.textContent = "Copied. Paste it anywhere to share your path."; }, fallback); } catch (e) { fallback(); }
+});
+document.addEventListener("keydown", (e) => {
+  if (!started || e.ctrlKey || e.metaKey || e.altKey || /INPUT|SELECT/.test(e.target.tagName)) return;
+  const i = parseInt(e.key, 10);
+  if (i >= 1 && i <= 6) chooseWay(WAY_ORDER[i - 1]);
+  if (e.key === "Escape" && S.sel) { S.sel = null; render(); }
+});
+try {
+  const last = JSON.parse(localStorage.getItem("voir.last") || "null");
+  if (last && last.title) { const el = $("lastRun"); el.textContent = `Last time you ended as ${last.title} at age ${last.age}. Will this life be different?`; el.hidden = false; }
+} catch (e) {}
+
+window.claude?.hot?.snapshot?.(() => ({ S, started, setupState }));
+const boot = (data) => {
+  if (data && data.S) { S = data.S; started = !!data.started; if (data.setupState) Object.assign(setupState, data.setupState); }
+  else newGame(defaultConfig(), 24680);
+  $("setup").hidden = started;
+  render();
+};
+window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot(window.claude?.hot?.data ?? {});
+
+// Read-only hook used by the automated tests.
+window.Voir = {
+  get state() { return S; }, moveInfo, odds, attackers, anyLegal, possibilities, wayTargets, blackTurn,
+  start(cfg, seed) { newGame({ ...defaultConfig(), ...cfg }, seed); started = true; $("setup").hidden = true; render(); },
+  render, audio: A, CAREERS
+};
+})();
+</script>
