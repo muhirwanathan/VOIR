@@ -437,3 +437,19 @@ test("Copy my result works with and without clipboard access; last result is rem
   g.close();
 });
 
+test("3D table: without WebGL the game falls back to the flat board and still plays", () => {
+  const g = load();
+  const d = g.d;
+  assert.ok(d.getElementById("scene"), "the 3D scene container exists");
+  assert.equal(d.getElementById("scene").hidden, true, "no WebGL: the 3D scene stays hidden");
+  assert.equal(d.getElementById("viewBtn").hidden, true, "no WebGL: the 3D toggle is not offered");
+  assert.equal(d.body.classList.contains("three"), false, "the flat board stays visible");
+  setup(g);
+  const ways = [...d.querySelectorAll(".way")].filter((b) => !b.disabled);
+  ways[0].click();
+  const sq = d.querySelector(".sq.target");
+  sq.click(); d.getElementById("commitBtn").click();
+  assert.equal(g.V.state.turn, 1, "a move was played on the flat board");
+  assert.ok("lastTry" in g.V.state, "each move records the square you tried, for the 3D replay");
+  assert.equal(g.errors.length, 0, g.errors.join("\n"));
+});
