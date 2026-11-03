@@ -337,6 +337,23 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+/* 3D table */
+.scene { position: relative; width: 100%; max-width: 760px; margin: 0 auto; aspect-ratio: 5 / 4; border-radius: 14px; overflow: hidden; background: var(--panel-2); box-shadow: 0 18px 40px -24px rgba(42, 28, 19, 0.55); }
+.scene canvas { display: block; width: 100%; height: 100%; touch-action: pan-y; cursor: grab; }
+@media (max-width: 600px) { .scene { aspect-ratio: 1 / 1.1; } }
+.scene .views { position: absolute; top: 10px; left: 10px; display: flex; gap: 2px; background: rgba(42, 28, 19, 0.6); padding: 3px; border-radius: 999px; }
+.scene .views button { border: 0; background: transparent; color: #f8f2e8; font: 600 0.74rem var(--font-body); padding: 5px 10px; border-radius: 999px; cursor: pointer; }
+.scene .views button[aria-pressed="true"] { background: #f8f2e8; color: #2a1c13; }
+.scene .tag { position: absolute; left: 0; top: 0; transform: translate(-50%, -100%); font: 700 0.66rem var(--font-display); letter-spacing: 0.14em; text-transform: uppercase; background: rgba(42, 28, 19, 0.82); color: #f8f2e8; padding: 4px 10px; border-radius: 999px; pointer-events: none; white-space: nowrap; opacity: 0; transition: opacity 0.2s; }
+.scene .tag.future { background: #9c6b2f; }
+.scene .bubble { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -100%); margin: 0; width: max-content; max-width: min(260px, 72%); background: #fbf7f0; color: #2a1c13; border-radius: 14px; padding: 9px 13px; font-size: 0.88rem; line-height: 1.35; box-shadow: 0 10px 26px -12px rgba(0, 0, 0, 0.55); pointer-events: none; }
+.scene .bubble::before { content: "Future you"; display: block; font: 700 0.6rem var(--font-display); letter-spacing: 0.14em; text-transform: uppercase; color: #9c6b2f; margin-bottom: 2px; }
+.scene .bubble::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 13px; height: 13px; background: inherit; transform: translateX(-50%) rotate(45deg); }
+.scene .bubble.in { animation: pop 0.3s ease-out; }
+@keyframes pop { from { opacity: 0; transform: translate(-50%, -92%) scale(0.96); } }
+.scene .orbit { position: absolute; right: 10px; bottom: 8px; font-size: 0.72rem; color: #f8f2e8; background: rgba(42, 28, 19, 0.5); padding: 3px 9px; border-radius: 99px; pointer-events: none; }
+body.three .board-area { display: none; }
+
 /* Last on purpose: hidden screens must stay hidden whatever display their class sets. */
 [hidden] { display: none !important; }
 </style>
@@ -350,6 +367,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     <button class="tog" id="soundBtn" type="button" aria-pressed="true" title="Sound effects on or off">
       <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M2 6h3l4-3.5v11L5 10H2z"/><path d="M11 5.5a3.5 3.5 0 0 1 0 5M12.8 3.5a6.3 6.3 0 0 1 0 9" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>Sound
     </button>
+    <button class="tog" id="viewBtn" type="button" aria-pressed="false" title="Switch between the 3D table and the flat board" hidden>3D table</button>
     <button class="tog" id="dreamBtn" type="button" aria-pressed="false">Change dream</button>
   </div>
 </header>
@@ -362,6 +380,17 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       <div class="life" id="lifeNo">Life #0</div>
     </div>
     <div class="checkbar" id="checkBar" hidden>CHECK <span id="checkText"></span></div>
+    <div class="scene" id="scene" hidden>
+      <div class="views" role="group" aria-label="Camera">
+        <button type="button" data-view="table" aria-pressed="true">Table</button>
+        <button type="button" data-view="seat" aria-pressed="false">Your seat</button>
+        <button type="button" data-view="above" aria-pressed="false">Above</button>
+      </div>
+      <span class="tag" id="tagYou" aria-hidden="true">You</span>
+      <span class="tag future" id="tagFuture" aria-hidden="true">Future you</span>
+      <p class="bubble" id="bubble" aria-live="polite" hidden></p>
+      <span class="orbit" aria-hidden="true">Drag to walk around the table</span>
+    </div>
     <div class="board-area">
       <div class="ranks" id="ranks" aria-hidden="true"></div>
       <div class="frame">
@@ -470,7 +499,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     <section id="step1">
       <div class="hero"><img src="assets/voir-board.png" alt="A walnut chessboard engraved VOIR, dark wooden pieces facing white marble pieces in warm window light"><h2>Voir</h2></div>
       <p class="means">French for <em>to see</em>.</p>
-      <p>This is a game of chess against life. You are the king. Every square on the board is something you could become, and every move is a year you will not get back.</p>
+      <p>This is a game of chess against life. You are the marble king. Across the table sits your future self, playing the pieces life threw at them. Every square is something you could become, and every move is a year you will not get back.</p>
       <p class="stepno">Step 1 of 3</p>
       <h3>What is your dream?</h3>
       <div class="dreams" id="dreams"></div>
@@ -504,6 +533,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (() => {
 const VS = "︎";
@@ -1137,6 +1167,7 @@ function render() {
   $("resultPanel").hidden = !S.over;
   if (S.over) renderResult();
   showHint(-1, -1);
+  V3.sync();
 }
 
 function renderValues(el) {
@@ -1189,6 +1220,7 @@ function commit() {
   if (S.over || !S.way || !S.sel) return;
   const way = S.way, t = S.sel, from = { ...S.pos };
   const o = odds(way, t), success = o.p >= 1 || rand() < o.p;
+  S.lastTry = { r: t.r, c: t.c, ok: success };
   const idx = t.r * 8 + t.c, tile = S.tiles[idx], b = blackAt(t.r, t.c), climb = from.r - t.r;
   const wasCheck = S.check;
   S.turn++; S.attempts++; S.uses[way]++; S.age++;
@@ -1432,6 +1464,740 @@ function begin() {
 }
 function restart(seed, cfg = S.cfg) { newGame(cfg, seed); started = true; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }
 
+/* ---------- 3D table: you and your future self ---------- */
+const V3 = (() => {
+  const T = window.THREE, host = $("scene");
+  const api = { ok: false, on: false, sync() {}, busy: () => false, set() {} };
+  if (!T || !host) return api;
+  let renderer;
+  try {
+    const probe = document.createElement("canvas");
+    if (!(probe.getContext("webgl2") || probe.getContext("webgl"))) return api;
+    renderer = new T.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+  } catch (e) { return api; }
+  api.ok = true;
+
+  const reduce = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const PACE = reduce ? 0.25 : 1;
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  renderer.outputEncoding = T.sRGBEncoding;
+  renderer.toneMapping = T.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.98;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = T.PCFSoftShadowMap;
+  const cv = renderer.domElement;
+  cv.setAttribute("role", "img");
+  cv.setAttribute("aria-label", "A 3D chess table. You sit on the near side with the white marble king. Your future self sits across the board and plays life's walnut pieces.");
+  host.prepend(cv);
+
+  const scene = new T.Scene();
+  const camera = new T.PerspectiveCamera(36, 1.3, 0.5, 220);
+  const V = (x, y, z) => new T.Vector3(x, y, z);
+  const UP = V(0, 1, 0);
+  const SY = 0.4;                       // top of the squares
+  const sqPos = (r, c, y = SY) => V(c - 3.5, y, r - 3.5);
+  const ease = (k) => k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+  let seedN = 11;
+  const pr = () => (seedN = (seedN * 16807) % 2147483647) / 2147483647;
+  const pickLine = (a) => a[Math.floor(Math.random() * a.length)];
+
+  /* Textures: wood grain and marble drawn on canvas, so nothing extra to download. */
+  const aniso = renderer.capabilities.getMaxAnisotropy();
+  function canvasTex(w, h, draw, repeat) {
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    draw(c.getContext("2d"), w, h);
+    const t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding; t.anisotropy = aniso;
+    if (repeat) t.wrapS = t.wrapT = T.RepeatWrapping;
+    return t;
+  }
+  const grain = (base, lines, n = 100, amp = 6) => (g, w, h) => {
+    g.fillStyle = base; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < n; i++) {
+      const y0 = pr() * h, f = 0.006 + pr() * 0.012, ph = pr() * 6.28, a = 1 + pr() * amp;
+      g.strokeStyle = lines[i % lines.length]; g.globalAlpha = 0.1 + pr() * 0.3; g.lineWidth = 0.5 + pr() * 2.2;
+      g.beginPath();
+      for (let x = -4; x <= w + 4; x += 4) {
+        const y = y0 + Math.sin(x * f + ph) * a + Math.sin(x * f * 2.7 + ph * 1.7) * a * 0.35;
+        if (x < 0) g.moveTo(x, y); else g.lineTo(x, y);
+      }
+      g.stroke();
+    }
+    g.globalAlpha = 1;
+  };
+  const marbleDraw = (g, w, h) => {
+    const gr = g.createLinearGradient(0, 0, w, h); gr.addColorStop(0, "#fcfaf6"); gr.addColorStop(1, "#ebe4d9");
+    g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 16; i++) {
+      g.strokeStyle = i % 3 ? "rgba(125,115,105,0.16)" : "rgba(95,85,75,0.3)"; g.lineWidth = 0.5 + pr() * 1.6;
+      g.beginPath(); let x = pr() * w, y = -5; g.moveTo(x, y);
+      while (y < h + 5) { x += (pr() - 0.5) * 24; y += 8 + pr() * 14; g.lineTo(x, y); }
+      g.stroke();
+    }
+  };
+  const TX = {
+    maple: canvasTex(512, 512, grain("#e5c999", ["#c9a26a", "#b98f57", "#d9b781"], 110, 5), true),
+    walnut: canvasTex(512, 512, grain("#7c4e32", ["#5b3521", "#4a2919", "#946446"], 110, 5), true),
+    frame: canvasTex(512, 512, grain("#4e311f", ["#2e1a0f", "#3b2416", "#654130"], 120, 7), true),
+    table: canvasTex(1024, 1024, grain("#5f3d28", ["#432818", "#38200f", "#78513a"], 220, 10), true),
+    dark: canvasTex(256, 256, grain("#4a2b1b", ["#2b170d", "#3a2214", "#5f3c28"], 70, 4), true),
+    marble: canvasTex(256, 256, marbleDraw, true),
+    floor: canvasTex(512, 512, grain("#8a6446", ["#6d4b33", "#a07a5a", "#5e3f2a"], 160, 3), true)
+  };
+  TX.table.repeat.set(1.4, 1.4); TX.floor.repeat.set(6, 6);
+  const std = (o) => new T.MeshStandardMaterial(o);
+  const MAT = {
+    frame: std({ map: TX.frame, roughness: 0.45, metalness: 0.02 }),
+    table: std({ map: TX.table, roughness: 0.55 }),
+    marble: std({ map: TX.marble, roughness: 0.2, metalness: 0.02 }),
+    walnut: std({ map: TX.dark, roughness: 0.36, metalness: 0.04 }),
+    brass: std({ color: 0xc9a050, roughness: 0.3, metalness: 0.85 }),
+    floor: std({ map: TX.floor, roughness: 0.8 }),
+    wall: std({ color: 0xe6d9c6, roughness: 0.95 }),
+    glow: new T.MeshBasicMaterial({ color: 0xfff1d2 })
+  };
+  const mesh = (geo, mat, x = 0, y = 0, z = 0, shadow = true) => {
+    const m = new T.Mesh(geo, mat); m.position.set(x, y, z);
+    if (shadow) { m.castShadow = true; m.receiveShadow = true; }
+    return m;
+  };
+  const box = (w, h, d, mat, x, y, z) => mesh(new T.BoxGeometry(w, h, d), mat, x, y, z);
+
+  /* Room and light: warm window light from the left, like the photo. */
+  const hemi = new T.HemisphereLight(0xfff3df, 0x3b2a1e, 0.55); scene.add(hemi);
+  const sun = new T.DirectionalLight(0xffdcae, 1.35);
+  sun.position.set(-15, 20, -5); sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  Object.assign(sun.shadow.camera, { left: -15, right: 15, top: 15, bottom: -15, near: 2, far: 60 });
+  sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;
+  scene.add(sun);
+  const fill = new T.DirectionalLight(0xc7d4ff, 0.28); fill.position.set(12, 8, 14); scene.add(fill);
+
+  const floor = mesh(new T.PlaneGeometry(120, 120), MAT.floor, 0, -6.4, 0); floor.rotation.x = -Math.PI / 2; floor.castShadow = false; scene.add(floor);
+  const backWall = mesh(new T.PlaneGeometry(120, 60), MAT.wall, 0, 20, -22, false); backWall.receiveShadow = true; scene.add(backWall);
+  const leftWall = mesh(new T.PlaneGeometry(120, 60), MAT.wall, -22, 20, 0, false); leftWall.rotation.y = Math.PI / 2; leftWall.receiveShadow = true; scene.add(leftWall);
+  const win = new T.Group();
+  win.add(mesh(new T.PlaneGeometry(14, 16), MAT.glow, 0, 0, 0, false));
+  [[-7.2, 0, 0.6, 16.8], [7.2, 0, 0.6, 16.8], [0, 0, 0.35, 16], [0, 8.2, 15, 0.6], [0, -8.2, 15, 0.6], [0, 0, 14, 0.35]].forEach(([x, y, w, h]) => win.add(box(w, h, 0.4, MAT.frame, x, y, 0.15)));
+  win.position.set(-21.9, 8, -6); win.rotation.y = Math.PI / 2; scene.add(win);
+
+  // Table
+  scene.add(box(17, 0.45, 11.2, MAT.table, 0, -0.225, 0));
+  [[-7.6, -4.9], [7.6, -4.9], [-7.6, 4.9], [7.6, 4.9]].forEach(([x, z]) => scene.add(box(0.7, 6, 0.7, MAT.table, x, -3.4, z)));
+
+  // Board: walnut frame, maple and walnut squares, engraved lettering.
+  const board = new T.Group(); scene.add(board);
+  board.add(box(9.7, 0.34, 9.7, MAT.frame, 0, 0.17, 0));
+  const sqGeo = new T.BoxGeometry(1, 0.06, 1);
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+    const dark = (r + c) % 2 === 1, t = (dark ? TX.walnut : TX.maple).clone();
+    t.needsUpdate = true; t.repeat.set(0.28, 0.28); t.offset.set(pr(), pr()); t.center.set(0.5, 0.5); t.rotation = pr() < 0.5 ? 0 : Math.PI / 2;
+    const m = mesh(sqGeo, std({ map: t, roughness: dark ? 0.4 : 0.46 }), c - 3.5, SY - 0.03, r - 3.5);
+    m.castShadow = false; board.add(m);
+  }
+  [[0, 4.42, 9.7, 0.86], [0, -4.42, 9.7, 0.86], [4.42, 0, 0.86, 8], [-4.42, 0, 0.86, 8]].forEach(([x, z, w, d]) => board.add(box(w, 0.1, d, MAT.frame, x, 0.39, z)));
+  const decal = (w, d, cw, ch, x, z, rotY = 0) => {
+    const c = document.createElement("canvas"); c.width = cw; c.height = ch;
+    const t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding; t.anisotropy = aniso;
+    const m = new T.Mesh(new T.PlaneGeometry(w, d), new T.MeshStandardMaterial({ map: t, transparent: true, roughness: 0.6, depthWrite: false }));
+    m.rotation.set(-Math.PI / 2, 0, rotY); m.position.set(x, 0.445, z); board.add(m);
+    return { c, g: c.getContext("2d"), t, m };
+  };
+  const engrave = (g, text, x, y, size, font = "Cinzel, Georgia, serif", weight = 700) => {
+    g.font = `${weight} ${size}px ${font}`; g.textAlign = "center"; g.textBaseline = "middle";
+    g.fillStyle = "rgba(255,226,186,0.28)"; g.fillText(text, x + 1.5, y + 2);
+    g.fillStyle = "rgba(22,11,5,0.86)"; g.fillText(text, x, y);
+  };
+  const filesDecal = decal(8, 0.86, 2048, 220, 0, 4.42);
+  const ranksDecal = decal(0.86, 8, 220, 2048, -4.42, 0);
+  const voirDecal = decal(0.86, 8, 220, 2048, 4.42, 0);
+  // Ledger beside the board: the career level of every rank.
+  const ledger = decal(2.9, 8.4, 360, 1044, -6.6, 0);
+  ledger.m.position.y = 0.005; scene.attach(ledger.m);
+
+  let labelKey = "";
+  function drawLabels() {
+    const car = C(), key = [S.cfg.career, S.cfg.goal, S.pos.r, S.pos.c].join("|");
+    if (key === labelKey) return; labelKey = key;
+    let g = filesDecal.g; g.clearRect(0, 0, 2048, 220);
+    car.files.forEach((f, c) => {
+      const x = c * 256 + 128;
+      engrave(g, "abcdefgh"[c], x, 70, 78);
+      g.font = `600 34px "Atkinson Hyperlegible", system-ui, sans-serif`; g.fillStyle = c === S.pos.c ? "rgba(240,205,140,0.95)" : "rgba(22,11,5,0.72)";
+      g.textAlign = "center"; g.fillText(f.length > 15 ? f.slice(0, 14) + "…" : f, x, 160);
+    });
+    filesDecal.t.needsUpdate = true;
+    g = ranksDecal.g; g.clearRect(0, 0, 220, 2048);
+    for (let r = 0; r < 8; r++) engrave(g, String(8 - r), 110, r * 256 + 128, 92);
+    ranksDecal.t.needsUpdate = true;
+    g = voirDecal.g; g.clearRect(0, 0, 220, 2048);
+    g.save(); g.translate(110, 1500); g.rotate(-Math.PI / 2); engrave(g, "VOIR", 0, 0, 120); g.restore();
+    voirDecal.t.needsUpdate = true;
+    g = ledger.g; g.clearRect(0, 0, 360, 1044);
+    g.fillStyle = "#f4ead8"; g.fillRect(6, 6, 348, 1032);
+    g.strokeStyle = "rgba(120,80,40,0.5)"; g.lineWidth = 3; g.strokeRect(16, 16, 328, 1012);
+    const curL = lvl(S.pos.r);
+    for (let r = 0; r < 8; r++) {
+      const L = 7 - r, y = 22 + r * 125 + 62;
+      if (L === S.cfg.goal) { g.fillStyle = "rgba(201,160,80,0.28)"; g.fillRect(18, y - 60, 324, 120); }
+      if (L === curL) { g.fillStyle = "rgba(60,35,20,0.88)"; g.fillRect(18, y - 60, 324, 120); }
+      g.textAlign = "center"; g.textBaseline = "middle";
+      g.fillStyle = L === curL ? "#f8f2e8" : "rgba(42,28,19,0.9)";
+      g.font = `700 25px Cinzel, Georgia, serif`;
+      g.fillText((L === S.cfg.goal ? "◆ " : "") + car.short[L].toUpperCase(), 180, y - 10);
+      g.font = `400 21px "Atkinson Hyperlegible", system-ui, sans-serif`;
+      g.fillStyle = L === curL ? "rgba(248,242,232,0.8)" : "rgba(42,28,19,0.6)";
+      g.fillText(L === curL ? "you are here" : L === S.cfg.goal ? "your goal" : "rank " + (8 - r), 180, y + 26);
+      if (r) { g.fillStyle = "rgba(120,80,40,0.25)"; g.fillRect(30, y - 62, 300, 2); }
+    }
+    ledger.t.needsUpdate = true;
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { labelKey = ""; if (api.on) drawLabels(); });
+
+  /* Pieces: turned on a lathe, like real Staunton pieces. */
+  const lathe = (pts) => new T.LatheGeometry(pts.map(([x, y]) => new T.Vector2(x, y)), 40);
+  const BASE = [[0, 0], [0.34, 0], [0.35, 0.03], [0.34, 0.07], [0.29, 0.1], [0.3, 0.13], [0.22, 0.18]];
+  const PROFILE = {
+    pawn: [...BASE, [0.15, 0.28], [0.11, 0.42], [0.19, 0.45], [0.19, 0.48], [0.1, 0.5], [0, 0.5]],
+    rook: [...BASE, [0.2, 0.25], [0.18, 0.58], [0.26, 0.62], [0.27, 0.78], [0.2, 0.78], [0.2, 0.74], [0, 0.74]],
+    bishop: [...BASE, [0.16, 0.26], [0.11, 0.58], [0.2, 0.62], [0.2, 0.65], [0.12, 0.68], [0.17, 0.76], [0.18, 0.84], [0.13, 0.93], [0.06, 0.99], [0, 1.0]],
+    knight: [...BASE, [0.24, 0.24], [0.25, 0.3], [0, 0.3]],
+    king: [...BASE, [0.17, 0.3], [0.13, 0.74], [0.24, 0.79], [0.24, 0.83], [0.15, 0.86], [0.2, 0.98], [0.22, 1.05], [0.13, 1.11], [0, 1.12]]
+  };
+  const HEIGHT = { pawn: 0.66, rook: 0.84, bishop: 1.06, knight: 0.98, king: 1.42 };
+  function knightHead() {
+    const s = new T.Shape();
+    [[-0.22, 0.26], [0.2, 0.26], [0.15, 0.44], [0.1, 0.55], [0.3, 0.63], [0.34, 0.73], [0.3, 0.79], [0.1, 0.87], [0.02, 0.97], [-0.04, 0.9], [-0.15, 0.84], [-0.25, 0.62]].forEach(([x, y], i) => i ? s.lineTo(x, y) : s.moveTo(x, y));
+    const g = new T.ExtrudeGeometry(s, { depth: 0.2, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.04, bevelSegments: 3 });
+    g.translate(0, 0, -0.1); g.rotateY(-Math.PI / 2);
+    return g;
+  }
+  const TEMPLATE = {};
+  for (const type of Object.keys(PROFILE)) {
+    const g = new T.Group();
+    g.add(mesh(lathe(PROFILE[type]), null));
+    if (type === "pawn") g.add(mesh(new T.SphereGeometry(0.15, 24, 16), null, 0, 0.6, 0));
+    if (type === "bishop") g.add(mesh(new T.SphereGeometry(0.05, 12, 8), null, 0, 1.03, 0));
+    if (type === "rook") for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4; g.add(box(0.13, 0.09, 0.13, null, Math.cos(a) * 0.2, 0.82, Math.sin(a) * 0.2)); }
+    if (type === "knight") g.add(mesh(knightHead(), null));
+    if (type === "king") { g.add(box(0.07, 0.3, 0.07, null, 0, 1.25, 0)); g.add(box(0.22, 0.07, 0.07, null, 0, 1.29, 0)); }
+    TEMPLATE[type] = g;
+  }
+  function makePiece(type, mat) {
+    const g = TEMPLATE[type].clone();
+    g.traverse((o) => { if (o.isMesh) o.material = mat; });
+    g.userData = { piece: true, type, h: HEIGHT[type] };
+    return g;
+  }
+
+  /* Event tokens: small inlaid discs, a brass star for a great mind. */
+  const css = getComputedStyle(document.documentElement);
+  const tokenMat = {};
+  ["study", "work", "people", "rest", "impact"].forEach((k) => { tokenMat[k] = std({ color: new T.Color((css.getPropertyValue("--t-" + k) || "#888").trim()).offsetHSL(0, 0.12, -0.12), roughness: 0.3, metalness: 0.1 }); });
+  const riskTex = canvasTex(128, 128, (g) => {
+    g.strokeStyle = "#2a1c13"; g.lineWidth = 7; g.setLineDash([14, 9]); g.beginPath(); g.arc(64, 64, 52, 0, Math.PI * 2); g.stroke();
+    g.font = "700 72px Cinzel, Georgia, serif"; g.fillStyle = "#2a1c13"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("?", 64, 70);
+  });
+  tokenMat.risk = std({ map: riskTex, transparent: true, color: 0xfff6e8, roughness: 0.5 });
+  const tokenGeo = new T.CylinderGeometry(0.21, 0.23, 0.05, 32);
+  const riskGeo = new T.CircleGeometry(0.3, 32); riskGeo.rotateX(-Math.PI / 2);
+  const starShape = new T.Shape();
+  for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? 0.11 : 0.26; const x = Math.cos(a) * rr, y = Math.sin(a) * rr; i ? starShape.lineTo(x, y) : starShape.moveTo(x, y); }
+  const starGeo = new T.ExtrudeGeometry(starShape, { depth: 0.06, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 2 });
+  starGeo.translate(0, 0, -0.03); starGeo.rotateZ(Math.PI);
+  const starMat = std({ color: 0xe0b33a, roughness: 0.25, metalness: 0.9, emissive: 0x5a3c00, emissiveIntensity: 0.5 });
+  function makeToken(tile) {
+    if (tile.t === "mind") { const s = mesh(starGeo, starMat, 0, SY + 0.42, 0); s.userData.spin = true; return s; }
+    if (tile.t === "risk") { const m = mesh(riskGeo, tokenMat.risk, 0, SY + 0.006, 0); m.castShadow = false; return m; }
+    return mesh(tokenGeo, tokenMat[tile.t], 0, SY + 0.025, 0);
+  }
+
+  /* People: you on the near side, your future self across the board. */
+  const SKIN = 0x7b4a2e;
+  const SHIRT = { doctor: 0xeef0ea, inventor: 0x3e5b6e, engineer: 0xb8762f, entrepreneur: 0x2c3140, creative: 0x8a3a4c, changemaker: 0x3e6e4c };
+  const torsoGeo = lathe([[0, 0], [1.05, 0], [1.18, 0.5], [1.26, 2.0], [1.42, 3.2], [1.38, 3.62], [1.0, 3.95], [0.42, 4.1], [0, 4.1]]);
+  const limb = (r1, r2) => { const g = new T.CylinderGeometry(r2, r1, 1, 18); g.translate(0, 0.5, 0); return g; };
+  const UPPER = limb(0.4, 0.31), FORE = limb(0.3, 0.24);
+  const ball = (r) => new T.SphereGeometry(r, 24, 16);
+  function person(o) {
+    const g = new T.Group();
+    const skin = std({ color: SKIN, roughness: 0.55 }), cloth = std({ color: o.shirt, roughness: 0.85 });
+    const hair = std({ color: o.hair, roughness: 0.95 }), pants = std({ color: 0x2b2a30, roughness: 0.9 }), dark = std({ color: 0x1a1210, roughness: 0.4 });
+    // Chair
+    g.add(box(3.4, 0.3, 3.1, MAT.frame, 0, -2.45, -0.35));
+    g.add(box(3.4, 4.6, 0.3, MAT.frame, 0, -0.1, -2.0));
+    [[-1.5, -1.7], [1.5, -1.7], [-1.5, 1.0], [1.5, 1.0]].forEach(([x, z]) => g.add(box(0.26, 3.8, 0.26, MAT.frame, x, -4.4, z)));
+    // Legs under the table
+    g.add(box(2.5, 0.9, 1.8, pants, 0, -2.0, -0.2));
+    [-0.65, 0.65].forEach((x) => {
+      const th = mesh(new T.CylinderGeometry(0.5, 0.5, 2.6, 16), pants, x, -1.95, 1.0); th.rotation.x = Math.PI / 2; g.add(th);
+      g.add(mesh(new T.CylinderGeometry(0.42, 0.38, 4.0, 16), pants, x, -4.1, 2.25));
+      g.add(box(0.75, 0.4, 1.4, dark, x, -6.2, 2.55));
+    });
+    // Upper body leans from the hips.
+    const pivot = new T.Group(); pivot.position.set(0, -1.7, 0); g.add(pivot);
+    const torso = mesh(torsoGeo, cloth); torso.scale.set(1, 1, 0.6); pivot.add(torso);
+    const neck = mesh(new T.CylinderGeometry(0.32, 0.36, 0.7, 16), skin, 0, 4.3, 0.05); pivot.add(neck);
+    const head = new T.Group(); head.position.set(0, 4.55, 0.05); pivot.add(head);
+    const skull = mesh(ball(0.78), skin, 0, 0.78, 0); skull.scale.set(0.92, 1.06, 0.98); head.add(skull);
+    const cap = mesh(new T.SphereGeometry(0.84, 28, 16, 0, Math.PI * 2, 0, Math.PI * 0.52), hair, 0, 0.86, -0.06); cap.scale.set(0.95, 1.02, 1.02); cap.rotation.x = -0.32; head.add(cap);
+    [-0.74, 0.74].forEach((x) => head.add(mesh(ball(0.16), skin, x, 0.74, 0)));
+    [-0.27, 0.27].forEach((x) => {
+      head.add(mesh(ball(0.085), dark, x, 0.86, 0.68));
+      const brow = box(0.26, 0.05, 0.06, hair, x, 1.06, 0.7); brow.rotation.z = x < 0 ? 0.12 : -0.12; head.add(brow);
+    });
+    head.add(mesh(ball(0.12), skin, 0, 0.66, 0.8));
+    const smile = mesh(new T.TorusGeometry(0.17, 0.03, 8, 20, Math.PI), dark, 0, 0.5, 0.71); smile.rotation.z = Math.PI; head.add(smile);
+    if (o.older) {
+      const rim = std({ color: 0xb8954e, roughness: 0.3, metalness: 0.8 });
+      [-0.27, 0.27].forEach((x) => head.add(mesh(new T.TorusGeometry(0.17, 0.025, 8, 24), rim, x, 0.86, 0.76)));
+      head.add(box(0.2, 0.03, 0.03, rim, 0, 0.88, 0.78));
+      const beard = mesh(new T.SphereGeometry(0.62, 24, 12, 0, Math.PI * 2, Math.PI * 0.55, Math.PI * 0.4), hair, 0, 0.82, 0.08); head.add(beard);
+    }
+    const anchors = [-1, 1].map((s) => { const a = new T.Object3D(); a.position.set(s * 1.3, 3.7, 0.08); pivot.add(a); return a; });
+    const arms = [-1, 1].map((side, i) => {
+      const parts = { up: mesh(UPPER, cloth), fore: mesh(FORE, cloth), elbow: mesh(ball(0.32), cloth), shoulder: mesh(ball(0.44), cloth), hand: mesh(ball(0.3), skin) };
+      parts.hand.scale.set(1, 0.8, 1.25);
+      Object.values(parts).forEach((m) => scene.add(m));
+      return { side, parts, anchor: anchors[i], cur: V(0, 0, 0), target: V(0, 0, 0), busy: false, a: 1.95, b: 1.85 };
+    });
+    g.position.set(0, 0, o.z); g.rotation.y = o.rot;
+    scene.add(g);
+    const p = { g, pivot, head, torso, cloth, arms, lean: 0, leanT: 0, look: null, phase: o.z, body: [torso, neck, head, ...arms.map((a) => a.parts.shoulder)], chin: 0 };
+    arms.forEach((a) => { a.cur.copy(restPos(p, a)); a.target.copy(a.cur); });
+    return p;
+  }
+  function restPos(p, arm) { return p.g.localToWorld(V(arm.side * 1.45, 0.32, 1.35)); }
+  const you = person({ z: 6.45, rot: Math.PI, shirt: 0x5d6f86, hair: 0x1b120c });
+  const future = person({ z: -6.45, rot: 0, shirt: SHIRT.doctor, hair: 0xb9b2a8, older: true });
+
+  const tA = V(0, 0, 0), tE = V(0, 0, 0), tD = V(0, 0, 0), tP = V(0, 0, 0);
+  function place(m, a, b) {
+    tD.subVectors(b, a); const len = tD.length() || 0.001;
+    m.position.copy(a); m.quaternion.setFromUnitVectors(UP, tD.multiplyScalar(1 / len)); m.scale.set(1, len, 1);
+  }
+  function poseArm(p, arm) {
+    arm.anchor.getWorldPosition(tA);
+    const H = arm.cur.clone(), L = arm.a + arm.b;
+    let d = tA.distanceTo(H);
+    tD.subVectors(H, tA).normalize();
+    if (d > L * 0.995) { d = L * 0.995; H.copy(tA).addScaledVector(tD, d); }
+    const x = (arm.a * arm.a - arm.b * arm.b + d * d) / (2 * d), h = Math.sqrt(Math.max(0, arm.a * arm.a - x * x));
+    tP.set(arm.side * 1.0, -0.55, -0.6).applyQuaternion(p.g.quaternion);
+    tP.addScaledVector(tD, -tP.dot(tD)).normalize();
+    tE.copy(tA).addScaledVector(tD, x).addScaledVector(tP, h);
+    const P = arm.parts;
+    P.shoulder.position.copy(tA);
+    place(P.up, tA, tE); P.elbow.position.copy(tE); place(P.fore, tE, H);
+    P.hand.position.copy(H); P.hand.quaternion.copy(P.fore.quaternion);
+  }
+  const reachLean = (p, pt) => { const loc = p.g.worldToLocal(pt.clone()); return clamp((loc.z - 2.0) / 4.0, 0, 1) * 0.6; };
+  function updatePerson(p, dt, clock, idleChin) {
+    p.lean += (p.leanT - p.lean) * (1 - Math.exp(-dt * 7));
+    p.pivot.rotation.x = p.lean;
+    p.torso.scale.y = 1 + Math.sin(clock * 1.6 + p.phase) * 0.012;
+    // Head turns toward what the person is watching.
+    const look = p.look || V(0, SY, 0);
+    const loc = p.g.worldToLocal(look.clone());
+    const yaw = clamp(Math.atan2(loc.x, loc.z), -0.8, 0.8);
+    const pitch = clamp(Math.atan2(4.6 - loc.y, Math.hypot(loc.x, loc.z)) - p.lean, -0.2, 0.75);
+    p.head.rotation.y += (yaw - p.head.rotation.y) * (1 - Math.exp(-dt * 5));
+    p.head.rotation.x += (pitch * 0.85 - p.head.rotation.x) * (1 - Math.exp(-dt * 5));
+    p.chin += ((idleChin ? 1 : 0) - p.chin) * (1 - Math.exp(-dt * 2.5));
+    p.g.updateMatrixWorld(true);
+    p.arms.forEach((arm, i) => {
+      if (!arm.busy) {
+        const rest = restPos(p, arm);
+        if (i === 1 && p.chin > 0.01) {
+          const chinPt = p.head.localToWorld(V(0.05, 0.25, 0.9));
+          rest.lerp(chinPt, p.chin);
+        }
+        arm.target.copy(rest);
+        arm.cur.lerp(arm.target, 1 - Math.exp(-dt * 6));
+      } else arm.cur.copy(arm.target);
+      poseArm(p, arm);
+    });
+  }
+
+  /* Markers: lit squares, danger, lived squares, the goal rank, your trail. */
+  const flat = (geo) => { geo.rotateX(-Math.PI / 2); return geo; };
+  const basic = (color, opacity) => new T.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false, toneMapped: false });
+  const ringMat = basic(0xffc94a, 0.95), dangerMat = basic(0xc0392b, 0.6), livedMat = basic(0x22140c, 0.24), selMat = basic(0xf6d27a, 0.4), checkMat = basic(0xd0402f, 0.42);
+  const ringGeo = flat(new T.RingGeometry(0.27, 0.44, 40)), discGeo = flat(new T.CircleGeometry(0.44, 40)), sqrGeo = flat(new T.PlaneGeometry(1, 1));
+  const xGeo = flat(new T.PlaneGeometry(0.5, 0.07));
+  const marks = new T.Group(); scene.add(marks);
+  const pool = { ring: [], danger: [], lived: [] };
+  for (let i = 0; i < 64; i++) {
+    const p = sqPos(Math.floor(i / 8), i % 8, SY + 0.012);
+    const ring = new T.Mesh(ringGeo, ringMat); ring.position.copy(p); marks.add(ring); pool.ring.push(ring);
+    const dg = new T.Group(); dg.position.copy(p);
+    const dr = new T.Mesh(ringGeo, dangerMat); dr.scale.setScalar(0.9); dg.add(dr);
+    [Math.PI / 4, -Math.PI / 4].forEach((a) => { const x = new T.Mesh(xGeo, dangerMat); x.rotation.y = a; dg.add(x); });
+    marks.add(dg); pool.danger.push(dg);
+    const lv = new T.Mesh(sqrGeo, livedMat); lv.position.copy(p); lv.position.y -= 0.004; marks.add(lv); pool.lived.push(lv);
+  }
+  const checkRings = [0, 1, 2, 3, 4].map(() => { const m = new T.Mesh(discGeo, checkMat); marks.add(m); return m; });
+  const selDisc = new T.Mesh(discGeo, selMat); marks.add(selDisc);
+  const goalBand = new T.Mesh(flat(new T.PlaneGeometry(8, 1)), basic(0xe3b24d, 0.16)); marks.add(goalBand);
+  const goalBar = new T.Mesh(new T.BoxGeometry(8, 0.03, 0.06), MAT.brass); marks.add(goalBar);
+  const hoverMat = new T.MeshBasicMaterial({ transparent: true, depthWrite: false, map: canvasTex(128, 128, (g) => { g.strokeStyle = "#fff4dc"; g.lineWidth = 8; g.strokeRect(6, 6, 116, 116); }) });
+  const hoverSq = new T.Mesh(sqrGeo, hoverMat); hoverSq.visible = false; marks.add(hoverSq);
+  const ghostMat = std({ map: TX.marble, transparent: true, opacity: 0.42, roughness: 0.3, depthWrite: false });
+  const ghost = makePiece("king", ghostMat); ghost.traverse((o) => { o.castShadow = false; }); ghost.visible = false; scene.add(ghost);
+  const trailG = new T.Group(); scene.add(trailG);
+  const trailMat = basic(0xd9a441, 0.75), dotGeo = flat(new T.CircleGeometry(0.1, 20)), segGeo = new T.CylinderGeometry(0.03, 0.03, 1, 8);
+  segGeo.translate(0, 0.5, 0);
+  let trailKey = "";
+  function drawTrail() {
+    const key = S.trail.map((t) => t.r * 8 + t.c).join(",");
+    if (key === trailKey) return; trailKey = key;
+    trailG.clear();
+    S.trail.forEach((t, i) => {
+      const a = sqPos(t.r, t.c, SY + 0.02);
+      const dot = new T.Mesh(dotGeo, trailMat); dot.position.copy(a); trailG.add(dot);
+      if (i) { const s = new T.Mesh(segGeo, trailMat); place(s, sqPos(S.trail[i - 1].r, S.trail[i - 1].c, SY + 0.02), a); trailG.add(s); }
+    });
+  }
+
+  /* Pieces on the board, rebuilt for each new life. */
+  const live = { king: null, blacks: {}, tokens: {} };
+  const kingMat = MAT.marble.clone(); kingMat.emissive = new T.Color(0x000000);
+  let side = { you: 0, future: 0 };
+  function offSpot(who) {
+    const k = side[who]++, s = who === "you" ? 1 : -1;
+    return V(s * (5.7 + (k % 2) * 0.85), 0, s * (3.6 - Math.floor(k / 2) * 0.9));
+  }
+  function clearPieces() {
+    [live.king, ...Object.values(live.blacks), ...Object.values(live.tokens)].forEach((m) => { if (m) scene.remove(m); });
+    live.king = null; live.blacks = {}; live.tokens = {}; side = { you: 0, future: 0 };
+  }
+  function rebuild() {
+    queue.length = 0; tweens.length = 0; act = null;
+    clearPieces();
+    live.king = makePiece("king", kingMat); live.king.position.copy(sqPos(S.pos.r, S.pos.c)); scene.add(live.king);
+    S.blacks.forEach((b) => {
+      const m = makePiece(b.type, MAT.walnut);
+      if (b.alive) m.position.copy(sqPos(b.r, b.c)); else { m.position.copy(offSpot("future")); }
+      live.blacks[b.id] = m; scene.add(m);
+    });
+    for (const [idx, tile] of Object.entries(S.tiles)) {
+      const m = makeToken(tile), p = sqPos(Math.floor(idx / 8), idx % 8, 0);
+      m.position.x = p.x; m.position.z = p.z; live.tokens[idx] = m; scene.add(m);
+    }
+    future.cloth.color.setHex(SHIRT[S.cfg.career] || 0x6b5a4a);
+    [you, future].forEach((p) => { p.leanT = 0; p.look = null; p.arms.forEach((a) => { a.busy = false; }); });
+    labelKey = ""; trailKey = "";
+    $("tagYou").textContent = `You · ${S.age}`;
+    $("tagFuture").textContent = `Future you · ${S.cfg.deadline}`;
+    if (S.over) ending(S.ending, true);
+    else bubble(S.turn ? pickLine(LINES.back) : pickLine(LINES.start()), 12000);
+  }
+
+  /* Animation queue: one hand moves at a time, like a real game. */
+  const queue = [], tweens = [];
+  let act = null;
+  const busy = () => !!act || queue.length > 0;
+  function step(list, dt, single) {
+    if (single) {
+      if (!act && list.length) { act = list.shift(); act.t = 0; act.start && act.start(); }
+      if (!act) return;
+      act.t += dt / (act.d * PACE); const k = Math.min(1, act.t);
+      act.step(k); if (k >= 1) { const a = act; act = null; a.end && a.end(); }
+      return;
+    }
+    for (let i = list.length - 1; i >= 0; i--) {
+      const tw = list[i]; tw.t = (tw.t || 0) + dt / (tw.d * PACE); const k = Math.min(1, tw.t);
+      tw.step(k); if (k >= 1) { list.splice(i, 1); tw.end && tw.end(); }
+    }
+  }
+  const pickArm = (p, pt) => { const loc = p.g.worldToLocal(pt.clone()); return p.arms[loc.x * p.arms[1].side >= 0 ? 1 : 0]; };
+  function carry(p, piece, from, to, o = {}) {
+    let arm, start, h;
+    const top = (pt) => pt.clone().add(V(0, h + 0.12, 0));
+    return {
+      d: o.d || 1.5,
+      start() { arm = pickArm(p, from); arm.busy = true; start = arm.cur.clone(); h = piece.userData.h || 0.8; p.look = from.clone(); o.start && o.start(); },
+      step(k) {
+        if (k < 0.3) {
+          const u = ease(k / 0.3); arm.target.lerpVectors(start, top(from), u); p.leanT = reachLean(p, from) * u;
+        } else if (k < 0.74) {
+          const u = ease((k - 0.3) / 0.44);
+          let s = u, lift = Math.sin(Math.PI * u) * (o.lift || 0.9);
+          if (o.fail) { s = Math.sin(Math.PI * u) * 0.55; lift = Math.sin(Math.PI * u) * 0.7; }
+          const pos = from.clone().lerp(to, s); pos.y += lift;
+          if (o.fail && u > 0.35 && u < 0.65) pos.x += Math.sin(u * 60) * 0.04;
+          if (o.tip) piece.rotation.z = o.tip * u;
+          piece.position.copy(pos); arm.target.copy(top(pos)); p.look = pos; p.leanT = reachLean(p, pos);
+          if (!o.mid0 && u > 0.92 && o.mid) { o.mid0 = true; o.mid(); }
+        } else {
+          const u = ease((k - 0.74) / 0.26), fin = o.fail ? from : to;
+          piece.position.copy(fin); arm.target.lerpVectors(top(fin), restPos(p, arm), u); p.leanT = reachLean(p, fin) * (1 - u);
+        }
+      },
+      end() { arm.busy = false; p.leanT = 0; p.look = null; o.end && o.end(); }
+    };
+  }
+  function slideAway(piece, to) {
+    const from = piece.position.clone();
+    tweens.push({ d: 0.9, step(k) { const u = ease(k); piece.position.lerpVectors(from, to, u); piece.position.y += Math.sin(Math.PI * u) * 0.8; piece.rotation.z = (Math.PI / 2) * u; piece.position.y += 0.33 * u; } });
+  }
+  function fadeToken(m) {
+    tweens.push({ d: 0.6, step(k) { m.scale.setScalar(Math.max(0.001, 1 - ease(k))); }, end() { scene.remove(m); } });
+  }
+
+  /* Your future self talks while playing. */
+  const LINES = {
+    start: () => [`I'm you at ${S.cfg.deadline}. I already played these years. Let's see how you play them.`, `Sit down. I'm you at ${S.cfg.deadline}. Every move you make decides who I am.`],
+    back: ["I'm still here. Your move."],
+    climb: ["Yes. That's how I got here.", "Good. I remember that feeling.", "One level up. Keep going.", "That move made me who I am."],
+    side: ["Sideways can be smart. I changed direction too.", "Interesting. I didn't try that."],
+    fail: ["That one didn't work for me either. Try again.", "It failed. The year is gone. I'm still here, though.", "I failed there too. It taught me something."],
+    face: (n) => [`You faced ${n}. I wish I had done that sooner.`, `${n} is off the board. Well played.`],
+    tile: (n) => [`${n}. That year mattered more than I knew.`, `I remember ${n.toLowerCase()}.`],
+    move: (n) => [`${n} moves. It came for me too.`, `Careful. ${n} is getting closer.`, `I'm playing ${n}. Life played it on me.`, `Your move. ${n} is waiting.`],
+    check: (n) => [`${n}. I remember this one. Get out of its way.`, `Check. ${n} caught me here too. Move.`],
+    passed: (n) => [`${n} passed. Some problems leave on their own.`],
+    goal: () => [`You made it. I'm proud of us.`],
+    mate: () => [`We got trapped. It happens. Play again, I'm still here.`],
+    time: () => [`We ran out of time, not out of life. Try another way.`],
+    stuck: () => [`Every way is blocked. Sometimes you have to change direction completely.`]
+  };
+  let bubbleTimer = 0;
+  function bubble(text, ms = 7000) {
+    const b = $("bubble"); b.textContent = text; b.hidden = false; b.classList.remove("in"); void b.offsetWidth; b.classList.add("in");
+    clearTimeout(bubbleTimer); bubbleTimer = setTimeout(() => { b.hidden = true; }, ms);
+  }
+  function ending(kind, instant) {
+    const say = () => bubble(pickLine(LINES[kind]()), 9000);
+    if (kind === "mate") {
+      const k = live.king, y0 = k.position.y;
+      if (instant) { k.rotation.z = 1.4; k.position.y = y0 + 0.22; say(); return; }
+      queue.push({ d: 1.1, start: say, step(u) { const e = ease(u); k.rotation.z = 1.4 * e; k.position.y = y0 + 0.22 * e + Math.sin(Math.PI * e) * 0.3; } });
+    } else if (kind === "goal") {
+      kingMat.emissive.setHex(0x6b4a12);
+      if (instant) { say(); return; }
+      queue.push({
+        d: 2.2, start() { say(); future.arms.forEach((a) => { a.busy = true; }); },
+        step(u) {
+          future.arms.forEach((a) => {
+            const clap = Math.abs(Math.sin(u * Math.PI * 6)) * 0.45;
+            a.target.copy(future.g.localToWorld(V(a.side * (0.2 + clap), 2.3 + Math.sin(u * Math.PI) * 0.6, 2.3)));
+          });
+        },
+        end() { future.arms.forEach((a) => { a.busy = false; }); }
+      });
+    } else say();
+  }
+
+  function animateTurn(prev) {
+    const tr = S.lastTry;
+    if (!tr) { rebuild(); return; }
+    const from = prev.pos, ok = tr.ok;
+    const capId = ok ? Object.keys(prev.blacks).find((id) => prev.blacks[id].alive && prev.blacks[id].r === S.pos.r && prev.blacks[id].c === S.pos.c) : null;
+    const gone = prev.tiles.filter((i) => !(i in S.tiles));
+    const climb = ok ? from.r - S.pos.r : 0;
+    let line;
+    if (!ok) line = pickLine(LINES.fail);
+    else if (capId) line = pickLine(LINES.face(S.blacks.find((b) => b.id === capId).name));
+    else if (gone.length) { const t = prev.tileKinds[gone[0]]; line = pickLine(t === "mind" ? ["A great mind. I still think about what they taught me."] : LINES.tile(C().events[t])); }
+    else line = pickLine(climb > 0 ? LINES.climb : LINES.side);
+    queue.push(carry(you, live.king, sqPos(from.r, from.c), sqPos(tr.r, tr.c), {
+      fail: !ok,
+      start() { future.look = sqPos(tr.r, tr.c); },
+      mid() {
+        if (capId && live.blacks[capId]) slideAway(live.blacks[capId], offSpot("you"));
+        gone.forEach((i) => { if (live.tokens[i]) { fadeToken(live.tokens[i]); delete live.tokens[i]; } });
+      },
+      end() { bubble(line); }
+    }));
+    for (const b of S.blacks) {
+      const p = prev.blacks[b.id], m = live.blacks[b.id];
+      if (!p || !m || !p.alive) continue;
+      if (b.alive && (p.r !== b.r || p.c !== b.c)) {
+        const checkNow = S.check || S.ending === "mate";
+        queue.push(carry(future, m, sqPos(p.r, p.c), sqPos(b.r, b.c), { start() { bubble(pickLine(checkNow && S.checkers.some((x) => x.id === b.id) ? LINES.check(b.name) : LINES.move(b.name))); } }));
+      } else if (!b.alive && b.id !== capId) {
+        queue.push(carry(future, m, sqPos(p.r, p.c), offSpot("future"), { start() { bubble(pickLine(LINES.passed(b.name))); } }));
+      }
+    }
+    $("tagYou").textContent = `You · ${S.age}`;
+    if (S.over) ending(S.ending, false);
+  }
+
+  let last = null;
+  function snap() {
+    return {
+      key: S.seed + "|" + JSON.stringify(S.cfg), turn: S.turn, pos: { ...S.pos },
+      blacks: Object.fromEntries(S.blacks.map((b) => [b.id, { r: b.r, c: b.c, alive: b.alive }])),
+      tiles: Object.keys(S.tiles), tileKinds: Object.fromEntries(Object.entries(S.tiles).map(([k, v]) => [k, v.t]))
+    };
+  }
+  function markers() {
+    drawLabels(); drawTrail();
+    const show = !busy() && !S.over;
+    const lset = new Set(cur.legal.map((t) => t.r * 8 + t.c)), dset = new Set(cur.danger.map((t) => t.r * 8 + t.c));
+    const occ = (i) => S.blacks.some((b) => b.alive && b.r * 8 + b.c === i) || !!S.tiles[i];
+    for (let i = 0; i < 64; i++) {
+      pool.ring[i].visible = show && lset.has(i);
+      pool.ring[i].scale.setScalar(occ(i) ? 1.12 : 1);
+      pool.danger[i].visible = show && dset.has(i);
+      pool.lived[i].visible = S.visited.includes(i) && i !== S.pos.r * 8 + S.pos.c;
+    }
+    const gr = 7 - S.cfg.goal;
+    goalBand.position.copy(sqPos(gr, 3.5, SY + 0.008));
+    goalBar.position.copy(sqPos(gr - 0.5, 3.5, SY + 0.02));
+    const sel = show && S.sel;
+    selDisc.visible = ghost.visible = !!sel;
+    if (sel) { selDisc.position.copy(sqPos(S.sel.r, S.sel.c, SY + 0.01)); ghost.position.copy(sqPos(S.sel.r, S.sel.c)); }
+    const ch = (S.check && !S.over && !busy()) ? S.checkers : [];
+    checkRings.forEach((m, i) => { m.visible = !!ch[i]; if (ch[i]) m.position.copy(sqPos(ch[i].r, ch[i].c, SY + 0.01)); });
+    trailG.visible = !busy();
+  }
+  api.sync = function () {
+    if (!api.on) return;
+    const key = S.seed + "|" + JSON.stringify(S.cfg);
+    if (!last || key !== last.key || S.turn < last.turn || (S.turn === 0 && last.turn > 0)) rebuild();
+    else if (S.turn > last.turn) animateTurn(last);
+    last = snap();
+    markers();
+  };
+  api.busy = busy;
+  api.view = (o) => { Object.assign(view, o); Object.assign(camS, o); };
+  api.advance = (sec) => { for (let t = 0; t < sec; t += 0.05) advance(0.05); draw(); };
+
+  /* Camera: drag to walk around the table, or pick a view. */
+  const VIEWS = { table: { th: 0.7, ph: 0.6, r: 21.5 }, seat: { th: 0, ph: 0.6, r: 19 }, above: { th: 0, ph: 1.45, r: 17 } };
+  const view = { ...VIEWS.table }, camS = { ...view };
+  const target = V(0, 0.9, -0.6);
+  function setView(name) {
+    if (VIEWS[name]) Object.assign(view, VIEWS[name]);
+    host.querySelectorAll("[data-view]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.view === name));
+  }
+  host.querySelectorAll("[data-view]").forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
+
+  const ray = new T.Raycaster(), ndc = new T.Vector2(), plane = new T.Plane(V(0, 1, 0), -SY);
+  function pickSq(e) {
+    const rc = cv.getBoundingClientRect();
+    ndc.set(((e.clientX - rc.left) / rc.width) * 2 - 1, -((e.clientY - rc.top) / rc.height) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    const objs = [live.king, ...Object.values(live.blacks)].filter(Boolean);
+    const hit = ray.intersectObjects(objs, true)[0];
+    if (hit) {
+      let o = hit.object; while (o && !(o.userData && o.userData.piece)) o = o.parent;
+      if (o) { const r = Math.round(o.position.z + 3.5), c = Math.round(o.position.x + 3.5); if (inB(r, c)) return { r, c }; }
+    }
+    const p = V(0, 0, 0);
+    if (!ray.ray.intersectPlane(plane, p)) return null;
+    const r = Math.floor(p.z + 4), c = Math.floor(p.x + 4);
+    return inB(r, c) ? { r, c } : null;
+  }
+  let drag = null;
+  cv.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, moved: false }; });
+  cv.addEventListener("pointermove", (e) => {
+    if (drag && (e.buttons || e.pointerType !== "mouse")) {
+      if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 7) { drag.moved = true; try { cv.setPointerCapture(e.pointerId); } catch (_) {} setView(null); }
+      if (drag.moved) {
+        view.th -= (e.clientX - drag.x) * 0.006;
+        view.ph = clamp(view.ph + (e.clientY - drag.y) * 0.004, 0.25, 1.5);
+        drag.x = e.clientX; drag.y = e.clientY;
+      }
+      return;
+    }
+    const sq = busy() ? null : pickSq(e);
+    hoverSq.visible = !!sq && !S.over;
+    if (sq) { hoverSq.position.copy(sqPos(sq.r, sq.c, SY + 0.016)); showHint(sq.r, sq.c); }
+    cv.style.cursor = sq && cur.legal.some((t) => t.r === sq.r && t.c === sq.c) ? "pointer" : "grab";
+  });
+  cv.addEventListener("pointerup", (e) => {
+    if (drag && !drag.moved && !busy()) { const sq = pickSq(e); if (sq) clickSquare(sq.r, sq.c); }
+    drag = null;
+  });
+  cv.addEventListener("pointercancel", () => { drag = null; });
+  cv.addEventListener("pointerleave", () => { hoverSq.visible = false; if (!drag) showHint(-1, -1); });
+
+  function resize() {
+    const w = host.clientWidth, h = host.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(host); else addEventListener("resize", resize);
+
+  let bgKey = "";
+  function theme() {
+    const bg = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || "#ebe2d4";
+    if (bg === bgKey) return; bgKey = bg;
+    const col = new T.Color(bg); scene.background = col; scene.fog = new T.Fog(col, 34, 80);
+    const dark = col.getHSL({}).l < 0.4;
+    MAT.wall.color.copy(col).offsetHSL(0, 0.02, dark ? 0.03 : -0.05);
+    hemi.intensity = dark ? 0.38 : 0.55; sun.intensity = dark ? 1.1 : 1.35;
+  }
+
+  const tagPos = V(0, 0, 0);
+  function placeTag(el, p, dy, show) {
+    if (!show) { el.style.opacity = 0; return; }
+    p.head.localToWorld(tagPos.set(0, 1.9 + dy, 0)); tagPos.project(camera);
+    const w = host.clientWidth, h = host.clientHeight;
+    const x = (tagPos.x + 1) / 2 * w, y = (1 - tagPos.y) / 2 * h;
+    const vis = tagPos.z < 1 && x > -40 && x < w + 40 && y > -20 && y < h + 40;
+    el.style.opacity = vis ? 1 : 0;
+    el.style.left = clamp(x, 70, w - 70) + "px"; el.style.top = clamp(y, 24, h - 8) + "px";
+  }
+
+  let t0 = performance.now(), clock = 0, wasBusy = false, chinT = 0;
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (!api.on || document.hidden || !host.clientWidth) { t0 = now; return; }
+    const dt = Math.min(0.05, (now - t0) / 1000); t0 = now;
+    advance(dt); draw();
+  }
+  function advance(dt) {
+    clock += dt;
+    theme();
+    step(queue, dt, true); step(tweens, dt, false);
+    const b = busy(); if (wasBusy !== b) { wasBusy = b; markers(); }
+    chinT += dt;
+    const thinking = !b && !S.over && (chinT % 14) > 7;
+    updatePerson(you, dt, clock, false);
+    updatePerson(future, dt, clock, thinking);
+    Object.values(live.tokens).forEach((m) => { if (m.userData.spin) { m.rotation.y = clock * 0.9; m.position.y = SY + 0.42 + Math.sin(clock * 2) * 0.05; } });
+    ringMat.opacity = 0.78 + Math.sin(clock * 3.2) * 0.2;
+    if (S.check && !S.over) kingMat.emissive.setRGB(0.35 + Math.sin(clock * 5) * 0.2, 0.02, 0.0);
+    else if (!(S.over && S.ending === "goal")) kingMat.emissive.setRGB(0, 0, 0);
+    const kf = 1 - Math.exp(-dt * 6);
+    camS.th += (view.th - camS.th) * kf; camS.ph += (view.ph - camS.ph) * kf; camS.r += (view.r - camS.r) * kf;
+    const r = camS.r * Math.max(1, 1.3 / camera.aspect);
+    camera.position.set(target.x + r * Math.cos(camS.ph) * Math.sin(camS.th), target.y + r * Math.sin(camS.ph), target.z + r * Math.cos(camS.ph) * Math.cos(camS.th));
+    camera.lookAt(target);
+    // From your own seat you see your hands, not the back of your head.
+    const behind = Math.abs(Math.atan2(Math.sin(camS.th), Math.cos(camS.th))) < 0.42 && camS.ph < 1.25;
+    you.body.forEach((m) => { m.visible = !behind; });
+    api.behind = behind;
+  }
+  function draw() {
+    const behind = api.behind;
+    renderer.render(scene, camera);
+    placeTag($("tagYou"), you, 0, !behind);
+    placeTag($("tagFuture"), future, 0, $("bubble").hidden);
+    const bb = $("bubble");
+    if (!bb.hidden) {
+      future.head.localToWorld(tagPos.set(0, 2.9, 0)); tagPos.project(camera);
+      const w = host.clientWidth, h = host.clientHeight;
+      bb.style.left = clamp((tagPos.x + 1) / 2 * w, 130, w - 130) + "px";
+      bb.style.top = clamp((1 - tagPos.y) / 2 * h, bb.offsetHeight + 46, h - 10) + "px";
+    }
+  }
+  requestAnimationFrame(frame);
+
+  api.set = function (on) {
+    api.on = on;
+    host.hidden = !on;
+    document.body.classList.toggle("three", on);
+    $("viewBtn").setAttribute("aria-pressed", on);
+    try { localStorage.setItem("voir.view", on ? "3d" : "flat"); } catch (e) {}
+    if (on) { resize(); last = null; if (S) api.sync(); }
+  };
+  return api;
+})();
+
 /* ---------- Wiring ---------- */
 buildBoard();
 renderDreams(); fillForm(); renderQuestions();
@@ -1447,6 +2213,12 @@ $("commitBtn").addEventListener("click", commit);
 $("musicBtn").addEventListener("click", () => { audioInit(); setMusic(!A.music); });
 $("soundBtn").addEventListener("click", () => { audioInit(); setSound(!A.sound); });
 $("dreamBtn").addEventListener("click", openSetup);
+$("viewBtn").addEventListener("click", () => V3.set(!V3.on));
+if (V3.ok) {
+  $("viewBtn").hidden = false;
+  let pref = null; try { pref = localStorage.getItem("voir.view"); } catch (e) {}
+  V3.set(pref !== "flat");
+}
 $("replayBtn").addEventListener("click", () => restart(S.seed));
 $("newBtn").addEventListener("click", () => restart(Math.floor(Math.random() * 90000) + 10000));
 $("copyBtn").addEventListener("click", () => {
@@ -1478,7 +2250,7 @@ window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot(window.claude?.
 window.Voir = {
   get state() { return S; }, moveInfo, odds, attackers, anyLegal, possibilities, wayTargets, blackTurn,
   start(cfg, seed) { newGame({ ...defaultConfig(), ...cfg }, seed); started = true; $("setup").hidden = true; render(); },
-  render, audio: A, CAREERS
+  render, audio: A, CAREERS, v3: V3
 };
 })();
 </script>
