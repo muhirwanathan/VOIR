@@ -66,3 +66,15 @@ npm test
 
 The tests load the real page in jsdom and play it through the DOM: setup, chess rules, check and checkmate, odds, possibilities, replay, sound toggles and 120 random full games across every career.
 
+## Project structure
+
+```
+index.html          The whole game: layout, styles, game logic, music and the 3D table
+assets/             The walnut board photo used on the start screen
+tests/voir.test.js  Automated tests (node:test + jsdom)
+package.json        Test script and dev dependency
+```
+
+## Author
+
+Nathan Muhirwa
