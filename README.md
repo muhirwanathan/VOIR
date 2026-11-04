@@ -24,3 +24,24 @@ You sit at a walnut chessboard as the white marble king. Across the table sits *
 
 Pick a lit square to see your odds, what happens if it works and what happens if it fails. Then play the move. **There is no going back.**
 
+## The rules of life
+
+- You can never move backwards in time, unless you are in check.
+- Like a king in chess, you can never step onto a square an obstacle attacks.
+- Life replies after every move. Obstacles can put you in check, and if no safe move is left, it is checkmate.
+- A failed move keeps you where you are and costs the year. Run out of energy and burnout costs another year.
+- The game ends when you reach your goal, run out of time, or get trapped.
+
+## How the odds work
+
+Each square holds an event (study, work, people, rest, impact, risk or a great mind). Your chance of success is:
+
+- the event's base chance,
+- plus your matching personality trait,
+- plus your energy,
+- minus a penalty for climbing more than one level at once,
+- minus a penalty if your skill is behind the level you aim for,
+- plus a bonus when you move with your signature piece.
+
+Odds are always between 5% and 97%. The **Possibilities** panel counts every path still open to you, the squares you can still reach and the fastest route to your goal.
+
