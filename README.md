@@ -51,3 +51,18 @@ The game opens on a 3D table built with [three.js](https://threejs.org/). You se
 
 If the device has no WebGL or is offline, Voir falls back to the flat board automatically. The **3D table** button switches between the two.
 
+## Run it
+
+Open `index.html` in a browser. Music and sound start when you press **Begin**.
+
+## Test it
+
+Requires [Node.js](https://nodejs.org/) 18 or newer.
+
+```bash
+npm install
+npm test
+```
+
+The tests load the real page in jsdom and play it through the DOM: setup, chess rules, check and checkmate, odds, possibilities, replay, sound toggles and 120 random full games across every career.
+
