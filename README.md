@@ -45,3 +45,9 @@ Each square holds an event (study, work, people, rest, impact, risk or a great m
 
 Odds are always between 5% and 97%. The **Possibilities** panel counts every path still open to you, the squares you can still reach and the fastest route to your goal.
 
+## The 3D table
+
+The game opens on a 3D table built with [three.js](https://threejs.org/). You see yourself and your future self facing each other across the board. Future you moves life's pieces by hand and talks to you as you play. Use the **Table**, **Your seat** and **Above** views, or drag to walk around the table.
+
+If the device has no WebGL or is offline, Voir falls back to the flat board automatically. The **3D table** button switches between the two.
+
